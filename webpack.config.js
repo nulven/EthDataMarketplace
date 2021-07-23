@@ -56,7 +56,7 @@ module.exports = {
         use: ['style-loader', 'css-loader'],
       },
       {
-        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+        test: /\.(woff(2)?|ttf|eot|svg)$/,
         use: [
           {
             loader: 'file-loader',
@@ -88,10 +88,12 @@ module.exports = {
           }
         }
       },
-      // All output '.js' files will have any sourcemaps re-processed by 'source-map-loader'.
       {
         enforce: 'pre',
         test: /\.js$/,
+        exclude: [
+          /@ethersproject/
+        ],
         loader: 'source-map-loader',
       },
     ],
@@ -103,7 +105,8 @@ module.exports = {
     }),
     new CopyPlugin({
       patterns: [
-        { from: 'public', to: '' }
+        { from: 'public', to: '' },
+        { from: 'circuits', to: 'circuits' }
       ]
     }),
   ],
@@ -115,6 +118,7 @@ module.exports = {
   externals: {
   },
   node: {
-    fs: "empty"
+    fs: "empty",
+    tls: "empty"
   }
 };

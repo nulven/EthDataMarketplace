@@ -8,9 +8,8 @@ const projectId = process.env.PROJECT_ID;
 const network_url = process.env.NODE_ENV === "production" ? `https://ropsten.infura.io/v3/${projectId}` : 'http://localhost:8545';
 const provider = new providers.JsonRpcProvider(network_url);
 
-const mnemonic = process.env.MNEMONIC;
-const path = process.env.WALLET_PATH;
-const walletMnemonic = Wallet.fromMnemonic(mnemonic, path).connect(provider);
+const privateKey = process.env.PRIVATE_KEY;
+const walletMnemonic = new Wallet(privateKey).connect(provider);
 var signer;
 if (process.env.NODE_ENV === 'production') {
   signer = walletMnemonic;
@@ -19,14 +18,16 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // first string is .sol, rest do not have that ending
-deploy("Core.sol", [
+deploy("Core", [
   "EncryptionVerifier",
+  "ContractVerifier",
+  "IpfsVerifier",
   "Pairing",
 ]);
 
 async function deploy(fileName, libraries = []) {
   try {
-    const file = getFile(fileName);
+    const file = getFile(`${fileName}.sol`);
 
     const input = {
       language: "Solidity",
@@ -64,11 +65,14 @@ async function deploy(fileName, libraries = []) {
       solc.compile(JSON.stringify(input), { import: findImports })
     );
     if (output.errors.filter(x => x.type !== 'Warning').length > 0) {
-      console.log(output.errors);
+      console.log(output.errors.filter(x => x.type !== 'Warning'));
       throw Error(`Solidity error`);
     }
 
-    const files = Object.entries(output.contracts);
+    let files = Object.entries(output.contracts);
+    files = files.filter(([name, object]) => {
+      return (name.slice(name.length-3) !== 'sol' || libraries.includes(name.slice(0, name.length-4)));
+    });
     const contracts = [];
     const deployedContracts = [];
 
@@ -103,7 +107,6 @@ async function deploy(fileName, libraries = []) {
               location.start * 2 + 2,
               (location.start + location.length) * 2 - 2
             );
-
             linkReferences[hex] = librariesAddresses[libraryName];
           });
         }
@@ -126,7 +129,7 @@ async function deploy(fileName, libraries = []) {
         console.log(name, contractObject.address);
         return { name, bytecode, abi, address: contractObject.address };
       } catch (err) {
-        console.log(err);
+        console.log(name, err);
       }
 
     }

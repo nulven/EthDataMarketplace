@@ -35,7 +35,7 @@ try {
   const split1 = 'contract Verifier {';
   const start = data.split(split)[0];
   const end = data.split(split1)[1];
-  const header = "pragma solidity 0.7.6; // >=0.5.16 <=\npragma experimental ABIEncoderV2;\nimport './Pairing.sol';\n\n"
+  const header = "pragma solidity >=0.7.6; // >=0.5.16 <=\npragma experimental ABIEncoderV2;\nimport './Pairing.sol';\n\n"
   const contract = start + header + "library " + camelCase(circuitName) + "Verifier {" + end;
   fs.writeFileSync(cwd + "/contracts/" + camelCase(circuitName) + "Verifier.sol", contract);
   execSync("rm " + "verifier.sol", {

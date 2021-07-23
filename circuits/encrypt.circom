@@ -1,6 +1,6 @@
 include "../node_modules/circomlib/circuits/mimc.circom"
 
-template Encrypt(N) {
+template EncryptBits(N) {
   signal private input plaintext[N];
   signal input shared_key;
   signal output out[N+1];
@@ -17,12 +17,29 @@ template Encrypt(N) {
     hasher[i] = MiMC7(91);
     hasher[i].x_in <== shared_key;
     hasher[i].k <== out[0] + i;
-    out[i+1] <== plaintext[i] + hasher[i].out; 
+    out[i+1] <== plaintext[i] + hasher[i].out;
   }
 }
 
+template Encrypt() {
+  signal private input plaintext;
+  signal input shared_key;
+  signal output out[2];
 
-template Decrypt(N) {
+  component mimc = MultiMiMC7(1, 91);
+  mimc.in[0] <== plaintext;
+  mimc.k <== 0;
+  out[0] <== mimc.out;
+
+  component hasher;
+  hasher = MiMC7(91);
+  hasher.x_in <== shared_key;
+  hasher.k <== out[0];
+  out[1] <== plaintext + hasher.out;
+}
+
+
+template DecryptBits(N) {
   signal input message[N+1];
   signal input shared_key;
   signal output out[N];
@@ -36,4 +53,18 @@ template Decrypt(N) {
     hasher[i].k <== message[0] + i;
     out[i] <== message[i+1] - hasher[i].out;
   }
+}
+
+template Decrypt() {
+  signal input message[2];
+  signal input shared_key;
+  signal output out;
+
+  component hasher;
+
+  // iv is message[0]
+  hasher = MiMC7(91);
+  hasher.x_in <== shared_key;
+  hasher.k <== message[0] + i;
+  out <== message[1] - hasher.out;
 }

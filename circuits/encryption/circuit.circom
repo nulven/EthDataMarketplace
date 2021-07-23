@@ -1,27 +1,25 @@
 include "../../node_modules/circomlib/circuits/mimcsponge.circom"
 include "../ecdh.circom";
+include "../../node_modules/circomlib/circuits/bitify.circom"
+
 include "../encrypt.circom";
 
 template Main() {
-  var N=10;
-  signal private input pre_image[N];
+  var N=256;
+  signal private input pre_image;
   signal private input private_key;
   signal input hash;
   signal input public_key[2];
-  signal output out[N+1];
+  signal output out[2];
 
-  // verify preimage is correct
-  component mimc = MultiMiMC7(N, 91);
-  for(var i=0; i<N; i++) {
-    mimc.in[i] <== pre_image[i];
-  }
+  component mimc = MultiMiMC7(1, 91);
+  mimc.in[0] <== pre_image;
   mimc.k <== 0;
-
   mimc.out === hash;
 
   // encrypt preimage
   component ecdh = Ecdh();
-  signal output shared_key;
+  signal shared_key;
 
   ecdh.private_key <== private_key;
   ecdh.public_key[0] <== public_key[0];
@@ -29,15 +27,11 @@ template Main() {
 
   shared_key <== ecdh.shared_key;
 
-  component encrypt = Encrypt(N);
-  for (var i=0; i<N; i++) {
-    encrypt.plaintext[i] <== pre_image[i];
-  }
+  component encrypt = Encrypt();
+  encrypt.plaintext <== pre_image;
   encrypt.shared_key <== shared_key;
-
-  for(var i=0; i<N+1; i++) {
-    out[i] <== encrypt.out[i];
-  }
+  out[0] <== encrypt.out[0];
+  out[1] <== encrypt.out[1];
 }
 
 component main = Main();
