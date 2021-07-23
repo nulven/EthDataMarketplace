@@ -76,7 +76,7 @@ const Token = (props: TokenProps) => {
   return (
     <TokenWrapper onClick={props.onClick}>
       {props.property === ContentProperties.HASH ?
-        <Hash hash={hash} />
+        <Hash hash={hash} message={''} />
       : null}
       {props.property === ContentProperties.BLUR ?
         <Image bits={blurredImage}></Image>
