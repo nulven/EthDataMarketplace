@@ -3,18 +3,11 @@ node_modules
 dist
 *.DS_Store
 
+config/config.json
 polls
 votes
 data
 circuits-compiled
 keys
 
-circuit.r1cs
-*.zkey
-*.wasm
 *.ptau
-proof.json
-public.json
-verification_key.json
-witness.wtns
-circuit.sym
