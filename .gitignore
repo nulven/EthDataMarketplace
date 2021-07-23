@@ -7,7 +7,6 @@ polls
 votes
 data
 circuits-compiled
-contracts/json
 keys
 
 circuit.r1cs
