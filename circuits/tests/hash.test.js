@@ -14,11 +14,6 @@ function stringToNum(string) {
   return number;
 }
 
-function ciphertextAsCircuitInputs(ciphertext) {
-  return [ciphertext.iv.toString(), ...ciphertext.data.map(_ => _.toString())];
-}
-
-const maci = require('maci-crypto');
 const { mimc7 } = require('circomlib');
 const fs = require('fs');
 const { Keypair } = require('maci-domainobjs');
@@ -30,13 +25,13 @@ const key1 = new Keypair();
 const key2 = new Keypair();
 
 const sharedKey = Keypair.genEcdhSharedKey(key1.privKey, key2.pubKey);
-const hash = mimc7.multiHash([preimageNum], BigInt(0));
-const ciphertext = maci.encrypt([preimageNum], sharedKey);
+const hash = mimc7.multiHash([preimageNum], BigInt(100));
 
 const input = {
   pre_image: preimageNum.toString(),
   key: sharedKey.toString(),
   hash: hash.toString(),
+  salt: '100',
 };
 
 fs.writeFile('./circuits/hash/input.json', JSON.stringify(input), () => {});

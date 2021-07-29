@@ -1,12 +1,5 @@
 import { EventEmitter } from 'events';
 import { Contract, providers, BigNumber as EthersBN } from 'ethers';
-//import EthConnection from './EthConnection';
-//import { deferred, timeoutAfter } from '../Utils/Utils';
-//import { ThrottledConcurrentQueue } from './ThrottledConcurrentQueue';
-//import NotificationManager from '../../Frontend/Game/NotificationManager';
-//import { openConfirmationWindowForTransaction } from '../../Frontend/Game/Popups';
-//import { DiagnosticUpdater } from '../Interfaces/DiagnosticUpdater';
-//import { getSetting, Setting } from '../../Frontend/Utils/SettingsHooks';
 import { EthFunctions } from '../types';
 
 export interface QueuedTxRequest {

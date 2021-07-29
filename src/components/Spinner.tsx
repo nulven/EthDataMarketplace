@@ -7,11 +7,10 @@ import { Large } from '../components/text';
 const SpinnerWrapper = styled.div`
   display: flex;
   width: 40%;
-  height: 10%;
+  flex: 1;
   margin-left: 30%;
   margin-right: 30%;
   margin-top: 20%;
-  margin-bottom: 70%;
   flex-direction: column;
   align-items: center;
 `;

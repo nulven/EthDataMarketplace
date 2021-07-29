@@ -1,36 +1,37 @@
 require('dotenv').config({ path: __dirname + '/../.env' });
-const { Contract, ContractFactory, providers, Wallet } = require("ethers");
-const linker = require("solc/linker");
-const solc = require("solc");
-const fs = require("fs");
+const { ContractFactory, providers, Wallet } = require('ethers');
+const linker = require('solc/linker');
+const solc = require('solc');
+const fs = require('fs');
+const contracts = require('@darkforest_eth/contracts');
 
 const projectId = process.env.PROJECT_ID;
-const network_url = process.env.NODE_ENV === "production" ? `https://ropsten.infura.io/v3/${projectId}` : 'http://localhost:8545';
+const network_url = process.env.NODE_ENV === 'production' ? `https://ropsten.infura.io/v3/${projectId}` : 'http://localhost:8545';
 const provider = new providers.JsonRpcProvider(network_url);
 
 const privateKey = process.env.PRIVATE_KEY;
-const walletMnemonic = new Wallet(privateKey).connect(provider);
+const wallet = new Wallet(privateKey).connect(provider);
 var signer;
 if (process.env.NODE_ENV === 'production') {
-  signer = walletMnemonic;
+  signer = wallet;
 } else {
   signer = provider.getSigner();
 }
 
-// first string is .sol, rest do not have that ending
-deploy("Core", [
-  "EncryptionVerifier",
-  "ContractVerifier",
-  "IpfsVerifier",
-  "Pairing",
-]);
+const contractJSON = require('./json/DarkForestCore.json');
+let dfCoreContractAddress;
+if (process.env.NODE_ENV === 'production') {
+  dfCoreContractAddress = contracts.CORE_CONTRACT_ADDRESS;
+} else {
+  dfCoreContractAddress = contractJSON.address;
+}
 
-async function deploy(fileName, libraries = []) {
+async function deploy(fileName, constructors=[], libraries = []) {
   try {
     const file = getFile(`${fileName}.sol`);
 
     const input = {
-      language: "Solidity",
+      language: 'Solidity',
       sources: {
         [fileName]: {
           content: file,
@@ -38,8 +39,8 @@ async function deploy(fileName, libraries = []) {
       },
       settings: {
         outputSelection: {
-          "*": {
-            "*": ["*"],
+          '*': {
+            '*': ['*'],
           },
         },
       },
@@ -66,12 +67,13 @@ async function deploy(fileName, libraries = []) {
     );
     if (output.errors.filter(x => x.type !== 'Warning').length > 0) {
       console.log(output.errors.filter(x => x.type !== 'Warning'));
-      throw Error(`Solidity error`);
+      throw Error('Solidity error');
     }
 
     let files = Object.entries(output.contracts);
     files = files.filter(([name, object]) => {
-      return (name.slice(name.length-3) !== 'sol' || libraries.includes(name.slice(0, name.length-4)));
+      return (name.slice(name.length-3) !== 'sol' ||
+              libraries.includes(name.slice(0, name.length-4)));
     });
     const contracts = [];
     const deployedContracts = [];
@@ -81,7 +83,8 @@ async function deploy(fileName, libraries = []) {
       contracts.push(...Object.entries(values));
     });
 
-    // sort with libraries first and contract last, so that it deploys the libraries first
+    // sort with libraries first and contract last,
+    // so that it deploys the libraries first
     contracts.sort(
       (file1, file2) =>
         libraries.includes(file2[0]) - libraries.includes(file1[0])
@@ -105,27 +108,31 @@ async function deploy(fileName, libraries = []) {
             // get the hex placeholder in the bytecode from the reference
             const hex = bytecode.slice(
               location.start * 2 + 2,
-              (location.start + location.length) * 2 - 2
+              (location.start + location.length) * 2 - 2,
             );
             linkReferences[hex] = librariesAddresses[libraryName];
           });
-        }
-      );
+        });
       bytecode = linker.linkBytecode(bytecode, linkReferences);
 
       try {
         const factory = await new ContractFactory(abi, bytecode, signer);
-        const contractObject = await factory.deploy();
+        let inputs = [];
+        if (name === 'Core') {
+          inputs = [...constructors];
+        }
+        const contractObject = await factory.deploy(...inputs);
         librariesAddresses[name] = contractObject.address;
-        const folder = process.env.NODE_ENV === "production" ? 'deploy' : 'json';
+        const folder = process.env.NODE_ENV === 'production' ?
+          'deploy' : 'json';
         fs.writeFileSync(
-          `contracts/${folder}/` + name + ".json",
+          `contracts/${folder}/` + name + '.json',
           JSON.stringify({
             abi: abi,
             address: contractObject.address,
-          })
+          }),
         );
-        
+
         console.log(name, contractObject.address);
         return { name, bytecode, abi, address: contractObject.address };
       } catch (err) {
@@ -136,4 +143,23 @@ async function deploy(fileName, libraries = []) {
   } catch (err) {
     console.log(`ERROR: ${err}`);
   }
+}
+
+const args = process.argv.slice(2);
+
+switch (args[0]) {
+  case 'Core':
+    console.log(dfCoreContractAddress);
+    deploy(
+      'Core',
+      [dfCoreContractAddress],
+      ['ContractVerifier', 'Pairing'],
+    );
+    break;
+  case 'DarkForestCore':
+    deploy('DarkForestCore',
+      [],
+      ['DarkForestUtils'],
+    );
+    break;
 }

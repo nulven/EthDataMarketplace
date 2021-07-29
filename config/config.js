@@ -1,18 +1,20 @@
 require('dotenv').config();
 const env = process.env.NODE_ENV;
 
+const defaultConfig = {
+  enableDarkForestCheck: process.env.DARK_FOREST_CHECK === 'true',
+  ipfsHost: process.env.IPFS_HOST,
+  ipfsProtocol: process.env.IPFS_PROTOCOL,
+};
+
 const config = {
   development: {
     env: 'development',
-    mnemonic: process.env.MNEMONIC,
-    walletPath: process.env.WALLET_PATH,
-    projectId: process.env.PROJECT_ID,
+    ...defaultConfig,
   },
   production: {
     env: 'production',
-    mnemonic: process.env.MNEMONIC,
-    walletPath: process.env.WALLET_PATH,
-    projectId: process.env.PROJECT_ID,
+    ...defaultConfig,
   },
 };
 const export_config = config[env];

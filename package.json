@@ -17,7 +17,8 @@
     "test": "NODE_ENV=test && npm run build && node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit",
     "compile": "node ./circuits/builder.js circuits-compiled keys true",
     "compile-solidity": "node ./circuits/solbuilder.js",
-    "ipfs": "ipfs daemon"
+    "ipfs": "ipfs daemon",
+    "deploy-contract": "node ./contracts/deploy.ts"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,7 @@
   "homepage": "https://github.com/nulven/EthDataMarketplace#readme",
   "dependencies": {
     "@babel/preset-react": "^7.10.1",
-    "@metamask/onboarding": "^1.0.1",
+    "@darkforest_eth/contracts": "^6.2.17",
     "@opengsn/contracts": "^2.2.2",
     "@openzeppelin/contracts": "^4.1.0",
     "@types/jest": "^25.2.3",
@@ -43,6 +44,7 @@
     "@types/react-router-dom": "^5.1.5",
     "@walletconnect/web3-provider": "^1.4.1",
     "antd": "^4.5.0",
+    "assert": "^2.0.0",
     "bl": "^5.0.0",
     "bootstrap": "3.3.7",
     "chartist": "0.10.1",
@@ -68,6 +70,7 @@
     "gh-pages": "^3.1.0",
     "http-server": "^0.12.3",
     "ipfs-http-client": "^50.1.2",
+    "keccak": "^3.0.1",
     "maci-crypto": "^0.8.4",
     "maci-domainobjs": "^0.8.4",
     "mini-css-extract-plugin": "^0.9.0",
@@ -103,6 +106,7 @@
     "react-select": "^4.1.0",
     "react-toastify": "^6.0.8",
     "react-toggle": "4.0.2",
+    "rlp": "^2.2.6",
     "sequelize": "^6.5.0",
     "skyid": "0.0.5",
     "skynet-js": "^3.0.0",

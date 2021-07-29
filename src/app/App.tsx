@@ -1,17 +1,16 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { HashRouter, Switch } from 'react-router-dom';
 import Web3Modal from 'web3modal';
 import WalletLink from 'walletlink';
 import WalletConnectProvider from '@walletconnect/web3-provider';
-import { Contract, ContractFactory, providers, Wallet } from 'ethers';
-import config from '../../config'
+import { providers } from 'ethers';
+import config from '../../config';
 
 import Page from './Page';
 import NewToken from './NewToken';
 import Token from './Token';
 import Tokens from './Tokens';
 import ChooseUser from './ChooseUser';
-import Home from './Home';
 import eth from '../utils/ethAPI';
 
 const INFURA_ID = '';
@@ -24,14 +23,14 @@ const walletLinkProvider = walletLink.makeWeb3Provider(
   1,
 );
 const web3Modal = new Web3Modal({
-  network: chain, // Optional. If using WalletConnect on xDai, change network to "xdai" and add RPC info below for xDai chain.
+  network: chain,
   cacheProvider: true, // optional
-  theme:"light", // optional. Change to "dark" for a dark theme.
+  theme: 'light', // optional. Change to "dark" for a dark theme.
   providerOptions: {
     walletconnect: {
       package: WalletConnectProvider, // required
       options: {
-        bridge: "https://polygon.bridge.walletconnect.org",
+        bridge: 'https://polygon.bridge.walletconnect.org',
         infuraId: INFURA_ID,
         rpc: {
           1:'https://${chain}.infura.io/v3/${INFURA_ID}', // mainnet // For more WalletConnect providers: https://docs.walletconnect.org/quick-start/dapps/web3-provider#required
@@ -48,7 +47,7 @@ const web3Modal = new Web3Modal({
         description: 'Connect to Coinbase Wallet (not Coinbase App)',
       },
       package: walletLinkProvider,
-      connector: async (provider, options) => {
+      connector: async (provider) => {
         await provider.enable();
         return provider;
       },
@@ -61,7 +60,9 @@ const App = () => {
 
   const logoutOfWeb3Modal = async () => {
     await web3Modal.clearCachedProvider();
-    if (eth.provider && eth.provider['provider'] && typeof eth.provider['provider'].disconnect == 'function') {
+    if (eth.provider &&
+        eth.provider['provider'] &&
+        typeof eth.provider['provider'].disconnect == 'function') {
       await eth.provider['provider'].disconnect();
     }
     setTimeout(() => {
@@ -74,16 +75,16 @@ const App = () => {
     const injectedProvider = new providers.Web3Provider(provider);
     eth.setProvider(injectedProvider, setSigner);
 
-    provider.on("chainChanged", chainId => {
+    provider.on('chainChanged', chainId => {
       console.log(`chain changed to ${chainId}! updating providers`);
     });
 
-    provider.on("accountsChanged", () => {
-      console.log(`account changed!`);
+    provider.on('accountsChanged', () => {
+      console.log('account changed!');
       eth.setProvider(injectedProvider, setSigner);
     });
 
-    provider.on("disconnect", (code, reason) => {
+    provider.on('disconnect', (code, reason) => {
       console.log(code, reason);
       logoutOfWeb3Modal();
     });
@@ -104,11 +105,30 @@ const App = () => {
   return (
     <HashRouter>
       <Switch>
-        <Page path="/tokens/new" navbar={true} Subpage={NewToken} signer={signer} />
-        <Page path="/tokens/:url" navbar={true} Subpage={Token} signer={signer} />
-        <Page path="/tokens" navbar={true} Subpage={Tokens} signer={signer} />
-        <Page path="/choose-user" navbar={true} Subpage={ChooseUser} signer={signer} />
-        <Page path="/" navbar={true} Subpage={Home} signer={signer} />
+        <Page
+          path="/tokens/new"
+          navbar={true}
+          Subpage={NewToken}
+          signer={signer}
+        />
+        <Page
+          path="/tokens/:url"
+          navbar={true}
+          Subpage={Token}
+          signer={signer}
+        />
+        <Page
+          path="/tokens"
+          navbar={true}
+          Subpage={Tokens}
+          signer={signer}
+        />
+        <Page
+          path="/choose-user"
+          navbar={true}
+          Subpage={ChooseUser}
+          signer={signer}
+        />
       </Switch>
     </HashRouter>
   );

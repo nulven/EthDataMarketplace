@@ -1,25 +1,20 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { mimc7 } from 'circomlib';
 
-import { ProfileContext } from './ContextProvider';
 import { Button } from '../components/Button';
 import { Large } from '../components/text';
 import Spinner from '../components/Spinner';
+import TextInput from '../components/TextInput';
 import PropertyToggle from './PropertyToggle';
-import { ContentInput } from './Content';
+import { ContentInput, ContentElements } from './Content';
 import {
-  stringToNum,
-  stringToBits,
   genSharedKey,
-  encryptMessage,
-  setCiphertext,
   setKey,
-  blurImage,
 } from '../utils/crypto';
 import eth from '../utils/ethAPI';
-import { addToIPFS, addSnark } from '../utils/ipfs';
-import { proveHash, proveBlur, verifyBlur } from '../utils/prover';
+import ipfs from '../utils/ipfs';
+
 import {
   ContentProperties,
   IpfsResponse,
@@ -43,7 +38,9 @@ const NewTokenWrapper = styled.div`
 
 const NewToken = (props) => {
   const [preimage, setPreimage] = useState('');
-  const [property, setProperty] = useState<ContentProperties>(ContentProperties.HASH);
+  const [property, setProperty] =
+    useState<ContentProperties>(ContentProperties.HASH);
+  const [price, setPrice] = useState<BigInt>(BigInt(0));
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
@@ -53,10 +50,9 @@ const NewToken = (props) => {
 
   const onSell = () => {
     setLoading(true);
-    const price = BigInt(10);
 
     const commitProof = (proof: Snark) => {
-      addSnark(proof).then((result: IpfsResponse) => {
+      ipfs.addSnark(proof).then((result: IpfsResponse) => {
         const url = result.path;
         setKey(url, sharedKey);
         eth.api.postUrl(url, keyHash, property, price)
@@ -70,24 +66,26 @@ const NewToken = (props) => {
           });
         localStorage.setItem(url, preimage);
       });
-    }
+    };
 
     const sharedKey = BigInt(genSharedKey().toString().slice(1));
     const keyHash = mimc7.multiHash([sharedKey], BigInt(0));
 
     setLoadingMessage('generating proof');
-    if (property === ContentProperties.HASH) {
-      const numPreimage = stringToNum(preimage);
-      const hash = mimc7.multiHash([numPreimage], BigInt(0));
+    const {
+      prover,
+      computeProperty,
+      assertProofInputs,
+    } = ContentElements[property];
+    const values = computeProperty(preimage, sharedKey);
+    const proofInputs = [sharedKey, ...values];
+    assertProofInputs(proofInputs);
+    prover(proofInputs).then(commitProof);
+  };
 
-      const ciphertext = encryptMessage(numPreimage, sharedKey);
-
-      proveHash(numPreimage, sharedKey, hash).then(commitProof);
-    } else if (property === ContentProperties.BLUR) {
-      const preimageArray = preimage.split('');
-      const blurredImage = blurImage(preimageArray, sharedKey);
-
-      proveBlur(preimageArray, sharedKey, blurredImage).then(commitProof);
+  const setPriceBigInt = (value: string) => {
+    if (parseInt(value)) {
+      setPrice(BigInt(value));
     }
   };
 
@@ -104,7 +102,13 @@ const NewToken = (props) => {
             preimage={preimage}
             setPreimage={setPreimage}
           />
-          <Button onClick={onSell}>
+          <TextInput
+            onChange={setPriceBigInt}
+            value={price.toString()}
+            placeholder={''}
+            label={'Price'}
+          />
+          <Button style={{ width: '100%' }} onClick={onSell}>
             Submit Token
           </Button>
         </NewTokenWrapper>

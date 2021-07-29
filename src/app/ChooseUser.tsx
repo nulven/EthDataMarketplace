@@ -1,10 +1,8 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
-import { Button } from '../components/Button';
 import { Large } from '../components/text';
-
-import { ProfileContext } from './ContextProvider';
+import eth from '../utils/ethAPI';
 
 const Title = styled(Large)`
   margin-bottom: 10px;
@@ -26,12 +24,16 @@ const AddressWrapper = styled.div`
   width: calc(100%);
   height: 50px;
   background-color: ${props => props.theme.color.white};
+  border: ${props => `1px solid ${props.theme.color.grey30}`};
   margin-bottom: 10px;
   border-radius: 4px;
   padding: 10px;
   padding-left: 20px;
   cursor: pointer;
   align-items: center;
+  :hover {
+    background-color: ${props => props.theme.color.grey10};
+  }
 `;
 
 const AddressText = styled(Large)`
@@ -55,20 +57,18 @@ const Address = (props: AddressProps) => {
 const ChooseUser = (props) => {
   const [addresses, setAddresses] = useState([]);
 
-  const profile = useContext(ProfileContext);
-
   useEffect(() => {
-    if (profile.address) {
-      setAddresses(profile.addresses);
+    if (props.signer) {
+      props.signer.provider.listAccounts().then(setAddresses);
     }
-  }, [profile.address]);
+  }, [props.signer]);
 
   const sendToTokens = () => {
     props.history.push('/tokens');
   };
 
   const selectAddress = (address: string) => () => {
-    profile.setAddress(address);
+    eth.setSigner(address);
     sendToTokens();
   };
 

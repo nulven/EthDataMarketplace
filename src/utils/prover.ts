@@ -1,28 +1,24 @@
-import { ciphertextAsCircuitInputs } from './crypto';
-
-const circuitPath = "/circuits/circuits-compiled/";
-const keyPath = "/circuits/keys/";
+const circuitPath = '/circuits/circuits-compiled/';
+const keyPath = '/circuits/keys/';
 
 
 // HELPERS
 async function prove(circuit, inputs) {
-  // prove that the signature is produced by the private key of the given public key
   // @ts-ignore
   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
     inputs,
-    circuitPath + circuit + "/circuit.wasm",
-    keyPath + circuit + "/circuit_final.zkey"
+    circuitPath + circuit + '/circuit.wasm',
+    keyPath + circuit + '/circuit_final.zkey',
   );
 
   return { proof, publicSignals };
 }
 
 async function verify(circuit, proof, publicSignals) {
-  const vKey = await fetch(keyPath + circuit + "/verification_key.json").then(
-    function (res) {
+  const vKey = await fetch(keyPath + circuit + '/verification_key.json')
+    .then(res => {
       return res.json();
-    }
-  );
+    });
 
   // @ts-ignore
   const res = await snarkjs.groth16.verify(vKey, publicSignals, proof);
@@ -31,26 +27,42 @@ async function verify(circuit, proof, publicSignals) {
 
 // PROVERS
 export async function proveEncryption(preImage, privateKey, hash, publicKey) {
-  return prove('encryption', { pre_image: preImage, private_key: privateKey, hash, public_key: publicKey });
+  return prove('encryption', {
+    pre_image: preImage,
+    private_key: privateKey,
+    hash,
+    public_key: publicKey,
+  });
 }
 
-export async function proveHash(preImage, key, hash) {
+export async function proveHash(args) {
   return prove('hash', {
-    pre_image: preImage.toString(),
-    key: key.toString(),
-    hash: hash.toString(),
+    pre_image: args[1].toString(),
+    key: args[0].toString(),
+    hash: args[2].toString(),
+    salt: args[3],
   });
 }
 
-export async function proveBlur(preimage, key, blurredImage) {
+export async function proveBlur(args) {
   return prove('blur-image', {
-    pre_image: preimage.map(_ => _.toString()),
-    key: key.toString(),
-    blurred_image: blurredImage.map(_ => _.toString()),
+    pre_image: args[1].map(_ => _.toString()),
+    key: args[0].toString(),
+    blurred_image: args[2].map(_ => _.toString()),
   });
 }
 
-import { Keypair, PrivKey, PubKey } from 'maci-domainobjs';
+export async function proveDF(args) {
+  return prove('df', {
+    x: args[1].toString(),
+    y: args[2].toString(),
+    key: args[0].toString(),
+    hash: args[3].toString(),
+    salt: args[4],
+  });
+}
+
+import { PrivKey, PubKey } from 'maci-domainobjs';
 
 export async function proveContract(
   privateKey: PrivKey,
@@ -71,11 +83,15 @@ export async function verifyEncryption(proof) {
 }
 
 export async function verifyHash(proof) {
-  return verify('hash', proof.proof, proof.publicSignals)
+  return verify('hash', proof.proof, proof.publicSignals);
 }
 
 export async function verifyBlur(proof) {
-  return verify('blur-image', proof.proof, proof.publicSignals)
+  return verify('blur-image', proof.proof, proof.publicSignals);
+}
+
+export async function verifyDF(proof) {
+  return verify('df', proof.proof, proof.publicSignals);
 }
 
 // FULL VERIFIERS

@@ -1,64 +1,44 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { FaAngleUp } from 'react-icons/fa';
-import { Keypair, PrivKey, PubKey } from 'maci-domainobjs';
+import { PrivKey, PubKey } from 'maci-domainobjs';
 
+import config from '../../config';
 import { Button } from '../components/Button';
-import DateDiv from '../components/Date';
 import { Header, Large } from '../components/text';
 import Spinner from '../components/Spinner';
-
-import { Content, Image } from './Content';
+import { Content, ContentElements } from './Content';
 
 import eth from '../utils/ethAPI';
+import ipfs from '../utils/ipfs';
 import {
-  stringToNum,
-  stringToBits,
-  getPreimage,
-  decryptKeyCiphertext,
-  decryptMessageCiphertext,
-  encryptMessage,
-  getCiphertext,
   getKey,
-  blurImage,
 } from '../utils/crypto';
 import {
-  proveEncryption,
   proveContract,
-  verifyHash,
-  verifyBlur,
 } from '../utils/prover';
-import { getFromIPFS, getSnark } from '../utils/ipfs';
+
 import {
-  ContentProperties,
-  ContentVerifiers,
   TokenStates,
   Snark,
   EmptySnark,
   Ciphertext,
-} from '../types'; 
+  ContentProperties,
+} from '../types';
 
-
-const Body = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
 
 const TokenWrapper = styled.div`
   margin-top: 10%;
   margin-left: 15%;
   margin-right: 15%;
   height: 80%;
-  position: relative;
   display: flex;
   flex-direction: column;
 `;
 
 const MintedTokensWrapper = styled.div`
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   flex: 1 0;
-  justify-content: space-between;
   width: calc(100% - 20px);
   position: relative;
   background-color: ${props => props.theme.color.grey30};
@@ -109,10 +89,11 @@ const MintedToken = (props: MintedTokenProps) => {
 };
 
 const StateHeaders = {
-  [TokenStates.UNPURCHASED]: (url: string) => `You do not own this NFT`,
-  [TokenStates.OWNED]: (url: string) => `You own this NFT`,
-  [TokenStates.SELLER]: (url: string) => `You are the seller of this NFT`,
-  [TokenStates.NULL]: (url: string) => `NFT is not found`,
+  [TokenStates.UNPURCHASED]: () => 'You do not own this NFT',
+  [TokenStates.OWNED]: () => 'You own this NFT',
+  [TokenStates.SELLER]:
+    () => 'You are the seller of this NFT',
+  [TokenStates.NULL]: () => 'NFT is not found',
 };
 
 
@@ -120,18 +101,17 @@ const Token = (props) => {
   const url = props.match.params.url;
   const [property, setProperty] = useState<ContentProperties>(null);
   const [loading, setLoading] = useState<string>('');
-  const [refresh, setRefresh] = useState(0);
   const [tokenState, setTokenState] = useState<TokenStates>(null);
   const [tokenIds, setTokenIds] = useState<BigInt[]>([]);
   const [snark, setSnark] = useState<Snark>(EmptySnark);
   const [key, setKey] = useState<BigInt>(BigInt(0));
-  const [hashCiphertext, setHashCiphertext] = useState<Ciphertext>({ iv: BigInt(0), data: [] });
-  const [blurredImage, setBlurredImage] = useState<number[]>([]);
-  const [hash, setHash] = useState(BigInt(0));
+  const [ciphertext, setCiphertext] = useState<Ciphertext | number[]>(null);
+  const [contentProperty, setContentProperty] =
+    useState<BigInt | number[]>(null);
   const [ownedToken, setOwnedToken] = useState(BigInt(0));
 
   useEffect(() => {
-    setLoading('');
+    setLoading('loading token');
     if (props.signer) {
       eth.api.getTokens(url).then((_tokens: BigInt[]) => {
         setTokenIds(_tokens);
@@ -139,29 +119,37 @@ const Token = (props) => {
       eth.api.getProperty(url).then(_property => {
         if (_property) {
           setProperty(_property);
-          getSnark(url).then((snark: Snark) => {
+          ipfs.getSnark(url).then((snark: Snark) => {
             setSnark(snark);
             setState().then(state => {
+              if (state === TokenStates.SELLER) {
+                const _key = getKey(url);
+                setKey(_key);
+              }
               if (_property === ContentProperties.HASH) {
                 const _hash = BigInt(snark.publicSignals[3]);
-                setHash(_hash);
-                if (state === TokenStates.SELLER) {
-                  const _ciphertext = {
-                    iv: BigInt(snark.publicSignals[1]),
-                    data: [BigInt(snark.publicSignals[2])],
-                  };
-                  setHashCiphertext(_ciphertext);
-                  const _key = getKey(url);
-                  setKey(_key);
-                }
-              }
-              else if (_property === ContentProperties.BLUR) {
-                const _blurredImage = snark.publicSignals.slice(1, 17).map(Number);
-                setBlurredImage(_blurredImage);
-                if (state === TokenStates.SELLER) {
-                  const _key = getKey(url);
-                  setKey(_key);
-                }
+                setContentProperty(_hash);
+                const _ciphertext = {
+                  iv: BigInt(snark.publicSignals[1]),
+                  data: [BigInt(snark.publicSignals[2])],
+                };
+                setCiphertext(_ciphertext);
+              } else if (_property === ContentProperties.DF) {
+                const _hash = BigInt(snark.publicSignals[4]);
+                setContentProperty(_hash);
+                const _ciphertext = {
+                  iv: BigInt(snark.publicSignals[1]),
+                  data: [
+                    BigInt(snark.publicSignals[2]),
+                    BigInt(snark.publicSignals[3]),
+                  ],
+                };
+                setCiphertext(_ciphertext);
+              } else if (_property === ContentProperties.BLUR) {
+                const _blurredImage =
+                  snark.publicSignals.slice(1, 17).map(Number);
+                setCiphertext(_blurredImage);
+                setContentProperty(_blurredImage);
               }
               setLoading('');
             });
@@ -172,7 +160,7 @@ const Token = (props) => {
         }
       });
     }
-  }, [props.signer, refresh])
+  }, [props.signer])
 
   const setState = async () => {
     const res = await eth.api.checkCreator(url, eth.address);
@@ -190,99 +178,94 @@ const Token = (props) => {
     return state;
   };
 
-  const onPurchase = () => {
-    setLoading('checking proof');
-    const verifier = ContentVerifiers[property];
-    verifier(snark).then(res => {
-      if (res) {
-        setLoading('purchasing token');
-        eth.api.buyToken(url)
-          .then(() => {
-            setRefresh(refresh+1);
-            setLoading('');
-          })
-          .catch(error => {
-            setLoading('');
-            alert(error.message);
-          });
-      } else {
-        alert('Not a valid token');
-        setLoading('');
+  const onPurchase = async () => {
+    try {
+      setLoading('checking proof');
+      const verifier = ContentElements[property].verifier;
+      if (!verifier) {
+        throw new Error(`${property} verifier not found`);
       }
-    }).catch(error => {
-      alert(error.message);
+
+      const verified = await verifier(snark);
+      if (!verified) {
+        console.log('not verified');
+        throw new Error('Not a valid token');
+      }
+
+      if (config.enableDarkForestCheck && property === ContentProperties.DF) {
+        setLoading('checking hash');
+        const hashCheck = await eth.api.checkHash(
+          contentProperty,
+          snark.publicSignals[snark.publicSignals.length-1],
+        ).catch(console.log);
+        if (!hashCheck) {
+          throw new Error('Not a valid token');
+        }
+      }
+
+      setLoading('purchasing token');
+      const purchase = await eth.api.buyToken(url);
+      if (!purchase) {
+        throw new Error('Not a valid token');
+      }
+
       setLoading('');
-    });
+      alert('Purchase successful');
+    } catch (error) {
+      setLoading('');
+      alert(error.message);
+    }
   };
 
-  const retrieveMessage = () => {
-    setLoading('getting ciphertext');
-    eth.api.getCiphertext(ownedToken).then((ciphertext: BigInt[]) => {
-      const _keyCiphertext: Ciphertext = {
-        iv: ciphertext[0],
-        data: [ciphertext[1]],
-      };
+  const retrieveMessage = async () => {
+    try {
+      setLoading('getting ciphertext');
+      const _keyCiphertext = await eth.api.getCiphertext(ownedToken);
 
       setLoading('get creator');
-      eth.api.getCreator(url).then(address => {
-        setLoading('get public key');
-        eth.api.getPublicKey(address).then(_publicKey => {
-          const [ciphertext, _key] = eth.retrieveCiphertext(_keyCiphertext, _publicKey, property, snark);
-          setKey(_key);
-          setCiphertext(ciphertext);
-          setLoading('');
-        }).catch(error => {
-          setLoading('');
-        });
-      });
-    }).catch(error => {
+      const address = await eth.api.getCreator(url);
+
+      setLoading('get public key');
+      const publicKey = await eth.api.getPublicKey(address);
+      const [_ciphertext, _key] = eth.retrieveCiphertext(
+        _keyCiphertext,
+        publicKey,
+        property,
+        snark,
+      );
+      setKey(_key);
+      setCiphertext(_ciphertext);
+
+      setLoading('');
+    } catch (error) {
       setLoading('');
       alert(error.message);
-    });
-  };
-
-  const setCiphertext = (ciphertext) => {
-    if (property === ContentProperties.HASH) {
-      setHashCiphertext(ciphertext);
-    } else if (property === ContentProperties.BLUR) {
-      setBlurredImage(ciphertext);
     }
-
-  }
-
-  const sendToTokens = () => {
-    props.history.push('/tokens');
   };
 
   const redeemEth = (tokenId: BigInt) => async () => {
-    setLoading('');
-    const _privateKey = BigInt(eth.privateKey.toString());
-    eth.api.getOwner(tokenId).then(publicKey => {
+    try {
       setLoading('generating proof');
+      const publicKey = await eth.api.getOwner(tokenId);
 
       const privKey = new PrivKey(eth.privateKey);
       const pubKey = new PubKey([publicKey[0], publicKey[1]]);
-      const sharedKey = Keypair.genEcdhSharedKey(privKey, pubKey);
-
       const _key = getKey(url);
 
-      proveContract(
+      const { proof, publicSignals } = await proveContract(
         privKey,
         _key,
         pubKey,
-      )
-        .then(({ proof, publicSignals }) => {
-          setLoading('sending proof to contract');
-          eth.api.redeem(proof, publicSignals, tokenId)
-            .then(() => {
-              setLoading('');
-            })
-            .catch(error => {
-              alert(error.message);
-              setLoading('');
-            });
-        });
-    });
+      );
+
+      setLoading('sending proof to contract');
+      await eth.api.redeem(proof, publicSignals, tokenId);
+
+      setLoading('');
+    } catch (error) {
+      setLoading('');
+      alert(error.message);
+    }
   };
 
   return (
@@ -291,18 +274,17 @@ const Token = (props) => {
         <Spinner loadingMessage={loading} />
         :
         <TokenWrapper>
-          <Header>{StateHeaders[tokenState](url)}</Header>
-          <Content
-            secretKey={key}
-            hash={{
-              cipher: hashCiphertext,
-              property: hash,
-            }}
-            image={{
-              cipher: blurredImage,
-              property: blurredImage,
-            }}
-          />
+          <Header>{StateHeaders[tokenState]()}</Header>
+          {tokenState !== TokenStates.NULL && tokenState ?
+            <Content
+              secretKey={key}
+              property={property}
+              content={{
+                cipher: ciphertext,
+                property: contentProperty,
+              }}
+            />
+            : null}
           {tokenState === TokenStates.UNPURCHASED ?
             <>
               <Button onClick={onPurchase}>
@@ -320,7 +302,11 @@ const Token = (props) => {
           {tokenState === TokenStates.SELLER && tokenIds.length > 0 ?
             <MintedTokensWrapper>
               {tokenIds.map(tokenId =>
-                <MintedToken key={tokenId.toString()} id={tokenId} onClick={redeemEth(tokenId)} /> 
+                <MintedToken
+                  key={tokenId.toString()}
+                  id={tokenId}
+                  onClick={redeemEth(tokenId)}
+                />,
               )}
             </MintedTokensWrapper>
             : null}

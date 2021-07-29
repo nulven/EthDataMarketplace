@@ -3,7 +3,6 @@ import styled from 'styled-components';
 export const Button = styled.button`
   font-family: ${props => props.theme.fontFamily};
   height: 40px;
-  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;

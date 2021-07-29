@@ -1,1 +1,0 @@
-{"abi":[{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"}],"address":"0x4892b26BAC45A7cA997400F9f72Acb5ed6Ce3f8e"}

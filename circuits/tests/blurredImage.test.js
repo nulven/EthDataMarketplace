@@ -8,16 +8,6 @@ function stringToBits(string) {
   return bitString;
 }
 
-function stringToNum(string) {
-  const bitString = stringToBits(string);
-  const number = BigInt(parseInt(bitString, 2));
-  return number;
-}
-
-function ciphertextAsCircuitInputs(ciphertext) {
-  return [ciphertext.iv.toString(), ...ciphertext.data.map(_ => _.toString())];
-}
-
 function dec2bin(dec) {
   return dec.toString(2);
 }
@@ -30,8 +20,6 @@ function blurImage(preImage, key) {
   return blurredImage;
 }
 
-const maci = require('maci-crypto');
-const { mimc7 } = require('circomlib');
 const fs = require('fs');
 const { Keypair } = require('maci-domainobjs');
 
@@ -48,4 +36,8 @@ const input = {
   blurred_image: blurImage(preimage, sharedKey).map(_ => _.toString()),
 };
 
-fs.writeFile('./circuits/blur-image/input.json', JSON.stringify(input), () => {});
+fs.writeFile(
+  './circuits/blur-image/input.json',
+  JSON.stringify(input),
+  () => {},
+);

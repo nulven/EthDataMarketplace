@@ -7,7 +7,7 @@ type Props = {
   handleEnter?: (string) => void,
   onChange: (value: string) => void,
   value: string,
-  style?: Object,
+  style?: object,
 };
 
 const TextAreaWrapper = styled.textarea`

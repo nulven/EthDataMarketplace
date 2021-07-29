@@ -5,7 +5,6 @@ import NavigationBar from './NavigationBar';
 import OurThemeProvider from './OurThemeProvider';
 import ProfileProvider from './ContextProvider';
 import { selfTheme } from '../styles/theme';
-import eth from '../utils/ethAPI';
 
 interface Props {
   path: string;
@@ -21,7 +20,7 @@ export default function Page(props: Props) {
 
   useEffect(() => {
     if (document) {
-      const title = 'Clef';
+      const title = 'Data Marketplace';
       document.title = title;
     }
   }, [path]);
@@ -33,7 +32,11 @@ export default function Page(props: Props) {
         <OurThemeProvider>
           <ProfileProvider profile={{}}>
             {navbar ?
-              <NavigationBar activeTab={path} history={_props.history} signer={props.signer} />
+              <NavigationBar
+                activeTab={path}
+                history={_props.history}
+                signer={props.signer}
+              />
               : null}
             <Subpage {..._props} signer={props.signer} />
           </ProfileProvider>

@@ -29,11 +29,14 @@ const ErrorNames = {
 
 const ErrorMessages = {
   [Errors.HashIsPosted]: () => 'The hash has already been posted.',
-  [Errors.EthIsRedeemed]: () => 'The Eth for this token has already been redeemed.',
-  [Errors.CiphertextNotReady]: () => 'The Ciphertext for this token has not been posted yet.',
+  [Errors.EthIsRedeemed]:
+    () => 'The Eth for this token has already been redeemed.',
+  [Errors.CiphertextNotReady]:
+    () => 'The Ciphertext for this token has not been posted yet.',
   [Errors.InvalidProof]: () => 'Invalid ZK proof.',
   [Errors.IncorrectHash]: () => 'Proof created using the incorrect hash.',
-  [Errors.IncorrectPublicKey]: () => 'Proof created using the incorrect public key.',
+  [Errors.IncorrectPublicKey]:
+    () => 'Proof created using the incorrect public key.',
   [Errors.PropertyDoesNotExist]: () => 'Property does not exist.',
   [Errors.SolidityError]: (error: string) => `Solidity error: ${error}`,
 };

@@ -1,11 +1,10 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+
 import { Button } from '../components/Button';
-
 import { Large } from '../components/text';
-
-import { ProfileContext } from './ContextProvider';
+import Ipfs from './Ipfs';
 import { selfTheme as theme } from '../styles/theme';
 
 
@@ -18,7 +17,7 @@ const NavBarElementWrapper = styled.div<NavBarElementProps>`
   border-bottom: ${props => (props.active ?
     `3px solid ${color}` : 'none')};
   :hover {
-    border-bottom: ${props => `3px solid ${color}`};
+    border-bottom: ${() => `3px solid ${color}`};
     div {
       color: ${color};
     }
@@ -58,26 +57,32 @@ const NavigationBarWrapper = styled.div`
   a {
     text-decoration: none;
   }
+  position: fixed;
 `;
 
 const ElementsWrapper = styled.div`
-  width: 100%;
+  flex: 2;
   height: 100%;
   display: flex;
   flex-direction: row;
   justify-content: space-around;
 `;
 
+const SidebarWrapper = styled.div`
+  display: flex;
+  justify-content: space-around;
+  flex: 1;
+  align-items: center;
+`;
+
 const LogoutButton = styled(Button)`
   display: flex;
-  width: 20%;
-  margin-top: 5px;
   margin-right: 10px;
   padding: 10px;
+  flex: 1;
 `;
 
 const Title = styled(Large)`
-  margin-top: 10px;
   margin-right: 20px;
   color: ${color};
 `;
@@ -90,10 +95,14 @@ type NavigationBarProps = {
 
 const NavigationBar = (props: NavigationBarProps) => {
   const [address, setAddress] = useState('');
+  const [addresses, setAddresses] = useState([]);
 
   useEffect(() => {
     if (props.signer) {
-      props.signer.getAddress().then(setAddress);
+      props.signer.getAddress().then(add => {
+        setAddress(add);
+      });
+      props.signer.provider.listAccounts().then(setAddresses);
     }
   }, [props.signer]);
 
@@ -110,20 +119,26 @@ const NavigationBar = (props: NavigationBarProps) => {
           activeTab={props.activeTab}
         />
       </ElementsWrapper>
+      {addresses.length > 0 ?
+        <LogoutButton onClick={sendToChooseUser}>
+          Choose Address
+        </LogoutButton>
+        : null}
       {address ?
-        <>
+        <SidebarWrapper>
           <Title>{address.slice(0,6)}</Title>
-          <LogoutButton onClick={sendToChooseUser}>
-            Switch Address
-          </LogoutButton>
+          <Ipfs />
           <LogoutButton onClick={() => {}}>
             Logout
           </LogoutButton>
-        </>
+        </SidebarWrapper>
         :
-        <LogoutButton onClick={() => {}}>
-          Login
-        </LogoutButton>
+        <SidebarWrapper>
+          <Ipfs />
+          <LogoutButton onClick={() => {}}>
+            Login
+          </LogoutButton>
+        </SidebarWrapper>
       }
     </NavigationBarWrapper>
   );

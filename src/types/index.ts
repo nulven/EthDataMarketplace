@@ -1,13 +1,16 @@
 import {
   proveHash,
   proveBlur,
+  proveDF,
   verifyHash,
   verifyBlur,
+  verifyDF,
 } from '../utils/prover';
 
 enum ContentProperties {
   HASH = 'hash',
   BLUR = 'blur',
+  DF = 'df',
 }
 
 enum EthFunctions {
@@ -26,16 +29,6 @@ enum EthFunctions {
   GET_PUBLIC_KEY = 'getPublicKey',
   GET_PROPERTY = 'getProperty',
   GET_PROPERTIES = 'getProperties',
-}
-
-const ContentProvers = {
-  [ContentProperties.HASH]: proveHash,
-  [ContentProperties.BLUR]: proveBlur,
-}
-
-const ContentVerifiers = {
-  [ContentProperties.HASH]: verifyHash,
-  [ContentProperties.BLUR]: verifyBlur,
 }
 
 enum TokenStates {
@@ -76,8 +69,6 @@ interface Ciphertext {
 
 export {
   ContentProperties,
-  ContentProvers,
-  ContentVerifiers,
   TokenStates,
   Snark,
   EmptySnark,

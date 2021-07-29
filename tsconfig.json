@@ -12,7 +12,8 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "noEmit": false,
-    "noImplicitThis": false
+    "noImplicitThis": false,
+    "types": ["node"]
   },
   "include": [
     "src/*"

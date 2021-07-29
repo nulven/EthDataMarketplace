@@ -1,0 +1,81 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "plugin:react/recommended",
+        "plugin:@typescript-eslint/eslint-recommended"
+    ],
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly",
+        "require": true,
+        "process": true,
+        "module": true,
+        "BigInt": true,
+        "Buffer": true
+    },
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "plugins": [
+        "react",
+        "@typescript-eslint"
+    ],
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    },
+    "ignorePatterns": [
+      "webpack.config.js",
+      "test/*",
+      "node_modules/*",
+      "dist/*",
+      "public/*",
+      "solbuilder.js",
+      "builder.js"
+    ],
+    "rules": {
+        "indent": [
+            "error",
+            2,
+            { "SwitchCase": 1 }
+        ],
+        "linebreak-style": [
+            "error",
+            "unix"
+        ],
+        "quotes": [
+            "error",
+            "single"
+        ],
+        "semi": [
+            "error",
+            "always"
+        ],
+        "max-len": [
+            "error",
+            {
+              "code": 80,
+              "ignoreUrls": true
+            }
+        ],
+        "object-curly-spacing": ["error", "always", {
+          "arraysInObjects": true,
+          "objectsInObjects": true 
+        }],
+        "comma-dangle": ["error", "always-multiline"],
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": ["error"],
+        "no-trailing-spaces": ["error"],
+        "no-inner-declarations": "off"
+    }
+}

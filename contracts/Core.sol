@@ -13,11 +13,24 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
 contract Core is ERC721URIStorage {
 
-  constructor() ERC721("test", "test") public {
+  DarkForestCore private immutable darkForestCore;
+  address public darkForestCoreAddress;
+
+  constructor(
+    address _darkForestCoreAddress
+  ) ERC721("test", "test") public {
+    darkForestCoreAddress = _darkForestCoreAddress;
+    darkForestCore = DarkForestCore(_darkForestCoreAddress);
     string memory hash = "hash";
     string memory blur = "blur";
+    string memory df = "df";
     createProperty(hash);
     createProperty(blur);
+    createProperty(df);
+  }
+
+  function getAddress() public view returns (address) {
+    return darkForestCoreAddress;
   }
 
   using Counters for Counters.Counter;
@@ -60,6 +73,20 @@ contract Core is ERC721URIStorage {
     string url;
     string property;
     uint256 price;
+  }
+
+  function getHashSalt() public view returns (uint256) {
+    DarkForestCore.SnarkConstants memory s = darkForestCore.snarkConstants();
+    return s.PLANETHASH_KEY;
+  }
+
+  function checkHash(uint256 hash, uint256 salt) public view returns (DarkForestCore.Planet memory) {
+    uint256 dfSalt = getHashSalt();
+    DarkForestCore.Planet memory planet;
+    if (dfSalt == salt) {
+      planet = darkForestCore.planets(hash);
+    }
+    return planet;
   }
 
   function getUrlData() public view returns (Url[] memory) {
@@ -222,4 +249,26 @@ contract Core is ERC721URIStorage {
     redeemed[tokenId] = 1;
     return true;
   }
+}
+
+abstract contract DarkForestCore {
+  enum PlanetType {PLANET, SILVER_MINE, RUINS, TRADING_POST, SILVER_BANK}
+  struct Planet {
+    address owner;
+    bool isHomePlanet;
+  }
+
+  struct SnarkConstants {
+    uint256 PLANETHASH_KEY;
+  }
+
+  struct GameStorage {
+    mapping(uint256 => Planet) planets;
+    SnarkConstants snarkConstants;
+  }
+
+  GameStorage public s;
+
+  function planets(uint256 key) public view virtual returns (Planet memory);
+  function snarkConstants() public view virtual returns (SnarkConstants memory);
 }

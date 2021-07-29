@@ -1,19 +1,18 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
 import { Button } from '../components/Button';
 import { Header } from '../components/text';
 
 import PropertyToggle from './PropertyToggle';
-import { Image, Hash } from './Content';
+import { ContentElements } from './Content';
 
 import eth from '../utils/ethAPI';
-import { getSnark } from '../utils/ipfs';
+import ipfs from '../utils/ipfs';
 import {
   ContentProperties,
-  TokenStates,
   Snark,
-} from '../types'; 
+} from '../types';
 
 const TokensWrapper = styled.div`
   display: flex;
@@ -21,6 +20,8 @@ const TokensWrapper = styled.div`
   align-items: center;
   margin-top: 10%;
   margin-bottom: 10px;
+  margin-left: 15%;
+  margin-right: 15%;
 `;
 
 const TokenWrapper = styled.div`
@@ -43,11 +44,11 @@ const TokenWrapper = styled.div`
 const PostsWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1;
   width: calc(100% - 100px);
   padding-left: 50px;
   padding-right: 50px;
   padding-top: 10px;
-  height: 100%;
   align-items: center;
 `;
 
@@ -58,39 +59,41 @@ type TokenProps = {
 };
 
 const Token = (props: TokenProps) => {
-  const [blurredImage, setBlurredImage] = useState<number[]>([]);
-  const [hash, setHash] = useState<bigint>(BigInt(0));
+  const [property, setProperty] = useState(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    getSnark(props.url).then((snark: Snark) => {
+    ipfs.getSnark(props.url).then((snark: Snark) => {
       if (props.property === ContentProperties.HASH) {
-        setHash(BigInt(snark.publicSignals[3]));
-      }
-      else if (props.property === ContentProperties.BLUR) {
+        setProperty(BigInt(snark.publicSignals[3]));
+      } else if (props.property === ContentProperties.BLUR) {
         const _blurredImage = snark.publicSignals.slice(1, 17).map(Number);
-        setBlurredImage(_blurredImage);
+        setProperty(_blurredImage);
+      } else if (props.property === ContentProperties.DF) {
+        setProperty(BigInt(snark.publicSignals[4]));
       }
+      setLoading(false);
     });
   }, []);
 
+  const PropertyListElement = ContentElements[props.property].list;
+
   return (
     <TokenWrapper onClick={props.onClick}>
-      {props.property === ContentProperties.HASH ?
-        <Hash hash={hash} message={''} />
-      : null}
-      {props.property === ContentProperties.BLUR ?
-        <Image bits={blurredImage}></Image>
-      : null}
+      {!loading ?
+        <PropertyListElement property={property} message={null} />
+        : null}
     </TokenWrapper>
   );
 };
 
 const Tokens = (props) => {
   const [tokens, setTokens] = useState([]);
-  const [property, setProperty] = useState<ContentProperties>(ContentProperties.HASH);
+  const [property, setProperty] =
+    useState<ContentProperties>(ContentProperties.HASH);
 
   useEffect(() => {
-    if (eth.signer) {
+    if (props.signer) {
       eth.api.getUrlData().then(urls => {
         setTokens(urls);
       });
@@ -110,7 +113,7 @@ const Tokens = (props) => {
       <TokensWrapper>
         <Header>Discover Tokens</Header>
         <PropertyToggle property={property} setProperty={setProperty} />
-        <Button onClick={sendToNewToken}>
+        <Button style={{ width: '100%' }} onClick={sendToNewToken}>
           Post Token
         </Button>
       </TokensWrapper>

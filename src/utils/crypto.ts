@@ -1,7 +1,4 @@
 import { encrypt, decrypt } from 'maci-crypto';
-import type { Plaintext } from 'maci-crypto';
-import { mimc7 } from 'circomlib';
-import fs from 'fs';
 import { Keypair } from 'maci-domainobjs';
 
 import { Ciphertext } from '../types';
@@ -75,7 +72,10 @@ function getCiphertext(url: string) {
 
 function setCiphertext(url: string, ciphertext: any, type: string) {
   const _ciphertext = ciphertextAsCircuitInputs(ciphertext);
-  return localStorage.setItem(`${url}_ciphertext`, `${type}_ciphertext.toString()`);
+  return localStorage.setItem(
+    `${url}_ciphertext`,
+    `${type}_ciphertext.toString()`,
+  );
 }
 
 function getKey(url: string): BigInt {
@@ -97,16 +97,30 @@ function ciphertextAsCircuitInputs(ciphertext) {
   return [ciphertext.iv.toString(), ...ciphertext.data.map(_ => _.toString())];
 }
 
-function decryptKeyCiphertext(ciphertext: Ciphertext, sharedKey: BigInt): BigInt {
+function decryptDFCiphertext(
+  ciphertext: Ciphertext,
+  sharedKey: BigInt,
+): BigInt[] {
+  const message = decrypt(ciphertext, sharedKey);
+  return message.map(BigInt);
+}
+
+function decryptKeyCiphertext(
+  ciphertext: Ciphertext,
+  sharedKey: BigInt,
+): BigInt {
   const messageNum = decrypt(ciphertext, sharedKey)[0];
   return BigInt(messageNum);
 }
 
-function decryptMessageCiphertext(ciphertext: Ciphertext, sharedKey: BigInt): string {
+function decryptMessageCiphertext(
+  ciphertext: Ciphertext,
+  sharedKey: BigInt,
+): string {
   const messageNum = decrypt(ciphertext, sharedKey)[0];
   const messageBits = messageNum.toString(2);
   const length = messageBits.length + (8 - (messageBits.length % 8));
-  const fullMessageBits = messageBits.padStart(length, '0')
+  const fullMessageBits = messageBits.padStart(length, '0');
   const messageBitsArray = fullMessageBits.split('');
   let message = '';
   for (let i = 0; i < messageBitsArray.length; i+=8) {
@@ -121,6 +135,7 @@ function decryptMessageCiphertext(ciphertext: Ciphertext, sharedKey: BigInt): st
 export {
   Keypair,
   decryptKeyCiphertext,
+  decryptDFCiphertext,
   decryptMessageCiphertext,
   ciphertextAsCircuitInputs,
   getKey,
@@ -134,4 +149,4 @@ export {
   setPreimage,
   getCiphertext,
   setCiphertext,
-}
+};
