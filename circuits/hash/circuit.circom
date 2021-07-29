@@ -8,6 +8,7 @@ template Main() {
   signal private input pre_image;
   signal private input key;
   signal input hash;
+  signal input salt;
   signal output key_hash;
   signal output ciphertext[2];
 
@@ -20,7 +21,7 @@ template Main() {
   // proof of property (hash)
   component mimc = MultiMiMC7(1, 91);
   mimc.in[0] <== pre_image;
-  mimc.k <== 0;
+  mimc.k <== salt;
   mimc.out === hash;
 
   // encryption of message
