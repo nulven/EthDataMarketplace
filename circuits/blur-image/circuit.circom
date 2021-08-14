@@ -3,7 +3,7 @@ include "../../node_modules/circomlib/circuits/mimc.circom"
 
 template Main() {
   var N = 16;
-  signal private input pre_image[N];
+  signal private input preimage[N];
   signal private input key;
   signal input blurred_image[N];
   signal output hash;
@@ -24,7 +24,7 @@ template Main() {
   }
 
   for (var i=0; i<N; i++) {
-    computed_image[i] <-- (pre_image[i] == key_bits[i]) ? 0 : 1;
+    computed_image[i] <-- (preimage[i] == key_bits[i]) ? 0 : 1;
     computed_image[i] === blurred_image[i];
   }
 }
