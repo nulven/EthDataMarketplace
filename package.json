@@ -13,6 +13,8 @@
     "compile": "node ./scripts/builder.js circuits-compiled keys true",
     "compile-solidity": "node ./scripts/solbuilder.js",
     "deploy": "node ./scripts/deploy.js",
+    "deploy:dev": "NODE_ENV=development && npm run deploy",
+    "deploy:prod": "NODE_ENV=production && npm run deploy",
     "build": "npm run build-config && npm run flow && $(npm bin)/webpack --mode development ",
     "client": "$(npm bin)/webpack --mode development --watch",
     "server": "http-server -a localhost -p 5000 ./dist -s -c-1",

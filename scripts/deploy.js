@@ -8,6 +8,8 @@ const path = require('path');
 const contracts = require('@darkforest_eth/contracts');
 
 const isProd = process.env.NODE_ENV === 'production';
+const projectId = process.env.INFURA_PROJECT_ID;
+const privateKey = process.env.PRIVATE_KEY;
 const network_url = isProd ? `https://ropsten.infura.io/v3/${projectId}` : 'http://localhost:8545';
 const provider = new providers.JsonRpcProvider(network_url);
 const signer = isProd ?
