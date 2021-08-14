@@ -1,5 +1,4 @@
 import React  from 'react';
-import styled from 'styled-components';
 
 import Toggle from '../components/Toggle';
 import { ContentProperties } from '../types';

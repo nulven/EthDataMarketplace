@@ -3,6 +3,20 @@ import { Keypair } from 'maci-domainobjs';
 
 import { Ciphertext } from '../types';
 
+import bigInt from 'big-integer';
+import { BigInteger } from 'big-integer';
+
+export const p = bigInt(
+  '21888242871839275222246405745257275088548364400416034343698204186575808495' +
+  '617',
+);
+const modPBigIntNative = (x: BigInteger) => {
+  let ret = bigInt(x).mod(p);
+  if (ret.lesser(bigInt(0))) {
+    ret = ret.add(p);
+  }
+  return ret;
+};
 
 function dec2bin(dec) {
   return dec.toString(2);
@@ -74,7 +88,7 @@ function setCiphertext(url: string, ciphertext: any, type: string) {
   const _ciphertext = ciphertextAsCircuitInputs(ciphertext);
   return localStorage.setItem(
     `${url}_ciphertext`,
-    `${type}_ciphertext.toString()`,
+    `${type}_${_ciphertext.toString()}`,
   );
 }
 
@@ -97,7 +111,7 @@ function ciphertextAsCircuitInputs(ciphertext) {
   return [ciphertext.iv.toString(), ...ciphertext.data.map(_ => _.toString())];
 }
 
-function decryptDFCiphertext(
+function decryptDarkForestCiphertext(
   ciphertext: Ciphertext,
   sharedKey: BigInt,
 ): BigInt[] {
@@ -135,7 +149,7 @@ function decryptMessageCiphertext(
 export {
   Keypair,
   decryptKeyCiphertext,
-  decryptDFCiphertext,
+  decryptDarkForestCiphertext,
   decryptMessageCiphertext,
   ciphertextAsCircuitInputs,
   getKey,
@@ -149,4 +163,5 @@ export {
   setPreimage,
   getCiphertext,
   setCiphertext,
+  modPBigIntNative,
 };

@@ -1,12 +1,10 @@
 import * as dotenv from 'dotenv';
 dotenv.config({ path: '/home/nulven/EthDataMarketplace/.env' });
 import { Contract, providers } from 'ethers';
-import { modPBigIntNative } from './mimc';
+import { modPBigIntNative } from './crypto';
 import config from '../../config';
 
-import contractJSONProd from '../../contracts/deploy/Core.json';
-import contractJSONDev from '../../contracts/json/Core.json';
-import dfContract from '../../contracts/json/DarkForestCore.json';
+import contractJSON from '../../public/contracts/Core.json';
 
 import { OurErrors, SolidityErrors } from './errors';
 
@@ -25,7 +23,6 @@ class EthConnection {
   provider: providers.Web3Provider | providers.JsonRpcProvider;
   signer;
   contract: Contract;
-  dfContract: Contract;
   gasPrice: number;
   gasLimit: number;
   api: any;
@@ -66,7 +63,7 @@ class EthConnection {
         this.signer = this.provider.getSigner();
       }
       await this.setAddress();
-      this.connect('Core');
+      this.connect();
       this.api.init(this.contract, this.address, this.publicKey);
       this.download();
       this.signerHook(this.signer);
@@ -105,18 +102,8 @@ class EthConnection {
     this.publicKey = _publicKey;
   }
 
-  public connectDF() {
-    const contractJSON = dfContract;
-    const contractABI = contractJSON.abi;
-    const contractAddress = contractJSON.address;
-    const contract = new Contract(contractAddress, contractABI, this.signer);
-    this.dfContract = contract;
-  }
-
-  public connect(contractName) {
+  public connect() {
     const { env } = config;
-    const contractJSON = env === 'production' ?
-      contractJSONProd : contractJSONDev;
     const contractABI = contractJSON.abi;
     const contractAddress = contractJSON.address;
     const contract = new Contract(contractAddress, contractABI, this.signer);

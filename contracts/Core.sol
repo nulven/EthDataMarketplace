@@ -1,9 +1,7 @@
 pragma solidity >=0.7.6;
 pragma experimental ABIEncoderV2;
 
-import "./EncryptionVerifier.sol";
-import "./ContractVerifier.sol";
-import "./Pairing.sol";
+import "./verifiers/EncryptionVerifier.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -234,7 +232,7 @@ contract Core is ERC721URIStorage {
     require(input[3] == _publicKey[0], 'Used wrong public key');
     require(input[4] == _publicKey[1], 'Used wrong public key');
     require(
-      ContractVerifier.verifyProof(a, b, c, input),
+      EncryptionVerifier.verifyProof(a, b, c, input),
       "Proof invalid!"
     );
 

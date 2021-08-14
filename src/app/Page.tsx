@@ -3,7 +3,6 @@ import { Route } from 'react-router-dom';
 
 import NavigationBar from './NavigationBar';
 import OurThemeProvider from './OurThemeProvider';
-import ProfileProvider from './ContextProvider';
 import { selfTheme } from '../styles/theme';
 
 interface Props {
@@ -30,16 +29,14 @@ export default function Page(props: Props) {
       exact path={path}
       render={(_props: any) => (
         <OurThemeProvider>
-          <ProfileProvider profile={{}}>
-            {navbar ?
-              <NavigationBar
-                activeTab={path}
-                history={_props.history}
-                signer={props.signer}
-              />
-              : null}
-            <Subpage {..._props} signer={props.signer} />
-          </ProfileProvider>
+          {navbar ?
+            <NavigationBar
+              activeTab={path}
+              history={_props.history}
+              signer={props.signer}
+            />
+            : null}
+          <Subpage {..._props} signer={props.signer} />
         </OurThemeProvider>
       )}
     />

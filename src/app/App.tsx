@@ -4,13 +4,16 @@ import Web3Modal from 'web3modal';
 import WalletLink from 'walletlink';
 import WalletConnectProvider from '@walletconnect/web3-provider';
 import { providers } from 'ethers';
+
 import config from '../../config';
 
 import Page from './Page';
-import NewToken from './NewToken';
-import Token from './Token';
-import Tokens from './Tokens';
-import ChooseUser from './ChooseUser';
+
+import NewToken from '../pages/NewToken';
+import Token from '../pages/Token';
+import Tokens from '../pages/Tokens';
+import ChooseUser from '../pages/ChooseUser';
+
 import eth from '../utils/ethAPI';
 
 const INFURA_ID = '';
@@ -127,6 +130,12 @@ const App = () => {
           path="/choose-user"
           navbar={true}
           Subpage={ChooseUser}
+          signer={signer}
+        />
+        <Page
+          path="/"
+          navbar={true}
+          Subpage={Tokens}
           signer={signer}
         />
       </Switch>

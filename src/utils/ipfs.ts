@@ -38,7 +38,7 @@ class IpfsConnection {
 
   async checkConnection(): Promise<boolean> {
     return new Promise(resolve => {
-      this.addToIpfs('test').then(res => {
+      this.addToIpfs('test').then(() => {
         resolve(true);
       }).catch(() => {
         resolve(false);
@@ -47,15 +47,15 @@ class IpfsConnection {
   }
 
   setApi() {
-    const auth = 'Basic ' +
-      Buffer.from(`${this.infuraProjectId}:${this.infuraProjectSecret}`)
-        .toString('base64');
     this.api = ipfsAPI.create({
       host: this.host,
       port: 5001,
       protocol: this.protocol,
     });
     /*
+    const auth = 'Basic ' +
+      Buffer.from(`${this.infuraProjectId}:${this.infuraProjectSecret}`)
+        .toString('base64');
     this.api = ipfsAPI.create({
       host: this.host,
       port: 5001,

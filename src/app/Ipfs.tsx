@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
-import { Button } from '../components/Button';
 import Modal from '../components/Modal';
 import TextInput from '../components/TextInput';
 import Toggle from '../components/Toggle';

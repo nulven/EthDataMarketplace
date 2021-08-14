@@ -1,11 +1,3 @@
-import {
-  proveHash,
-  proveBlur,
-  proveDF,
-  verifyHash,
-  verifyBlur,
-  verifyDF,
-} from '../utils/prover';
 
 enum ContentProperties {
   HASH = 'hash',

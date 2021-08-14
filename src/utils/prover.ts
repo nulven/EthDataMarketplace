@@ -52,8 +52,8 @@ export async function proveBlur(args) {
   });
 }
 
-export async function proveDF(args) {
-  return prove('df', {
+export async function proveDarkForest(args) {
+  return prove('dark-forest', {
     x: args[1].toString(),
     y: args[2].toString(),
     key: args[0].toString(),
@@ -90,8 +90,8 @@ export async function verifyBlur(proof) {
   return verify('blur-image', proof.proof, proof.publicSignals);
 }
 
-export async function verifyDF(proof) {
-  return verify('df', proof.proof, proof.publicSignals);
+export async function verifyDarkForest(proof) {
+  return verify('dark-forest', proof.proof, proof.publicSignals);
 }
 
 // FULL VERIFIERS
