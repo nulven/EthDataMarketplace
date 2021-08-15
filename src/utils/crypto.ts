@@ -22,10 +22,9 @@ function dec2bin(dec) {
   return dec.toString(2);
 }
 
-function blurImage(preImage, key): number[] {
-  const _preImage = preImage.map(Number);
+function blurImage(preImage: number[], key: BigInt): number[] {
   const keyBits = dec2bin(key);
-  const blurredImage = _preImage.map((bit, index) => {
+  const blurredImage = preImage.map((bit, index) => {
     return bit^keyBits[keyBits.length-1-index];
   });
   return blurredImage;

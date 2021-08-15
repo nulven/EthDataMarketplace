@@ -1,21 +1,27 @@
-const circuitPath = '/circuits/circuits-compiled/';
+const wasmPath = '/circuits/wasm/';
 const keyPath = '/circuits/keys/';
+const verificationKeyPath = '/circuits/verification_keys/';
 
+function camelCase(str) {
+  return str.split('-').map(_ => {
+    return _[0].toUpperCase() + _.slice(1);
+  }).join('');
+}
 
 // HELPERS
 async function prove(circuit, inputs) {
   // @ts-ignore
   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
     inputs,
-    circuitPath + circuit + '/circuit.wasm',
-    keyPath + circuit + '/circuit_final.zkey',
+    wasmPath + camelCase(circuit) + '.wasm',
+    keyPath + camelCase(circuit) + '.zkey',
   );
 
   return { proof, publicSignals };
 }
 
 async function verify(circuit, proof, publicSignals) {
-  const vKey = await fetch(keyPath + circuit + '/verification_key.json')
+  const vKey = await fetch(verificationKeyPath + camelCase(circuit) + '.json')
     .then(res => {
       return res.json();
     });
@@ -26,9 +32,9 @@ async function verify(circuit, proof, publicSignals) {
 }
 
 // PROVERS
-export async function proveEncryption(preImage, privateKey, hash, publicKey) {
+export async function proveEncryption(preimage, privateKey, hash, publicKey) {
   return prove('encryption', {
-    pre_image: preImage,
+    preimage,
     private_key: privateKey,
     hash,
     public_key: publicKey,
@@ -37,7 +43,7 @@ export async function proveEncryption(preImage, privateKey, hash, publicKey) {
 
 export async function proveHash(args) {
   return prove('hash', {
-    pre_image: args[1].toString(),
+    preimage: args[1].toString(),
     key: args[0].toString(),
     hash: args[2].toString(),
     salt: args[3],
@@ -46,7 +52,7 @@ export async function proveHash(args) {
 
 export async function proveBlur(args) {
   return prove('blur-image', {
-    pre_image: args[1].map(_ => _.toString()),
+    preimage: args[1].map(_ => _.toString()),
     key: args[0].toString(),
     blurred_image: args[2].map(_ => _.toString()),
   });

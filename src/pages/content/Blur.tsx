@@ -120,7 +120,7 @@ const assertContent = (content) => {
 const assertMessage = isNumberArray;
 
 const computeProperty = (preimage, key) => {
-  const preimageArray = preimage.split('');
+  const preimageArray = preimage.split('').map(Number);
   const blurredImage = blurImage(preimageArray, key);
   return [preimageArray, blurredImage];
 };
