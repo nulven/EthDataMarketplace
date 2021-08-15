@@ -93,8 +93,12 @@ function setCiphertext(url: string, ciphertext: any, type: string) {
 
 function getKey(url: string): BigInt {
   const _key = localStorage.getItem(`${url}_key`);
-  const key = BigInt(_key);
-  return key;
+  if (_key) {
+    const key = BigInt(_key);
+    return key;
+  } else {
+    alert('Key for url not found');
+  }
 }
 
 function setKey(url: string, key: BigInt) {

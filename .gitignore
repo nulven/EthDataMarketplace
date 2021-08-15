@@ -5,6 +5,5 @@ dist
 
 config/config.json
 public/contracts/dev
-keys
 
 *.ptau
