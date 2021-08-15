@@ -93,7 +93,7 @@ function setCiphertext(url: string, ciphertext: any, type: string) {
 
 function getKey(url: string): BigInt {
   const _key = localStorage.getItem(`${url}_key`);
-  if (_key) {
+  if (_key === 'null') {
     const key = BigInt(_key);
     return key;
   } else {
