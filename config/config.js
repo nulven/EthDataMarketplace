@@ -5,6 +5,7 @@ const defaultConfig = {
   enableDarkForestCheck: process.env.DARK_FOREST_CHECK === 'true',
   ipfsHost: process.env.IPFS_HOST,
   ipfsProtocol: process.env.IPFS_PROTOCOL,
+  network: process.env.NETWORK,
 };
 
 const config = {

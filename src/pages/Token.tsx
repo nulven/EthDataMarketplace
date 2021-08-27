@@ -8,7 +8,9 @@ import { Header, Large } from '../components/text';
 import Spinner from '../components/Spinner';
 import { Content, ContentElements } from './Content';
 
-import eth from '../utils/ethAPI';
+import sol from '../utils/ethAPI';
+import cairo from '../utils/cairoAPI';
+const eth = config.network === 'starknet' ? cairo : sol;
 import ipfs from '../utils/ipfs';
 import {
   getKey,
@@ -227,7 +229,7 @@ const Token = (props) => {
 
       setLoading('get public key');
       const publicKey = await eth.api.getPublicKey(address);
-      const [_ciphertext, _key] = eth.retrieveCiphertext(
+      const [_ciphertext, _key] = await eth.retrieveCiphertext(
         _keyCiphertext,
         publicKey,
         property,
@@ -252,7 +254,14 @@ const Token = (props) => {
       const pubKey = new PubKey([publicKey[0], publicKey[1]]);
       const _key = getKey(url);
 
+      /*
       const { proof, publicSignals } = await proveContract(
+        privKey,
+        _key,
+        pubKey,
+      );
+      */
+      const { fact, jobKey } = await proveContract(
         privKey,
         _key,
         pubKey,

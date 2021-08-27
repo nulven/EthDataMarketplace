@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
+import config from '../../config';
 import { Large } from '../components/text';
-import eth from '../utils/ethAPI';
+import sol from '../utils/ethAPI';
+import cairo from '../utils/cairoAPI';
+const eth = config.network === 'starknet' ? cairo : sol;
 
 const Title = styled(Large)`
   margin-bottom: 10px;
@@ -58,8 +61,12 @@ const ChooseUser = (props) => {
   const [addresses, setAddresses] = useState([]);
 
   useEffect(() => {
-    if (props.signer) {
-      props.signer.provider.listAccounts().then(setAddresses);
+    if (config.network === 'starknet') {
+      setAddresses(eth.getAddresses());
+    } else {
+      if (props.signer) {
+        props.signer.provider.listAccounts().then(setAddresses);
+      }
     }
   }, [props.signer]);
 

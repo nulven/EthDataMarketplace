@@ -101,13 +101,14 @@ const assertMessage = (message) => assert(typeof message === 'string');
 import { mimc7 } from 'circomlib';
 import {
   stringToNum,
+  pedersenHash,
 } from '../../utils/crypto';
 import eth from '../../utils/ethAPI';
-const computeProperty = (preimage) => {
+const computeProperty = async (preimage) => {
   const numPreimage = stringToNum(preimage);
-  const salt = eth.salt;
-  //const salt = BigInt('100');
-  const hash = mimc7.multiHash([numPreimage], salt);
+  const salt = BigInt('0');
+  //const hash = mimc7.multiHash([numPreimage], salt);
+  const hash = await pedersenHash(numPreimage, salt);
   return [numPreimage, hash, salt];
 };
 

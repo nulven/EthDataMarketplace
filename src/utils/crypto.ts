@@ -1,10 +1,23 @@
 import { encrypt, decrypt } from 'maci-crypto';
 import { Keypair } from 'maci-domainobjs';
+import { post } from './api';
 
 import { Ciphertext } from '../types';
 
 import bigInt from 'big-integer';
 import { BigInteger } from 'big-integer';
+
+function serializeUrl(url: string) {
+  const part1 = url.slice(0, url.length / 2);
+  const part2 = url.slice(url.length / 2);
+  const parts = [part1, part2];
+  return parts.map(part => BigInt(`0x${Buffer.from(part).toString('hex')}`).toString());
+}
+
+function parseUrl(parts: BigInt[]): string {
+  const newParts = parts.map(part => Buffer.from(part.toString(16), 'hex').toString());
+  return newParts.join('');
+}
 
 export const p = bigInt(
   '21888242871839275222246405745257275088548364400416034343698204186575808495' +
@@ -17,6 +30,15 @@ const modPBigIntNative = (x: BigInteger) => {
   }
   return ret;
 };
+
+async function pedersenHash(x: BigInt, y: BigInt): Promise<BigInt> {
+  return new Promise(resolve => {
+    post('http://localhost:5002/hash', { x: x.toString(), y: y.toString() }).then(res => {
+      console.log(res.res);
+      resolve(BigInt(res.res));
+    });
+  });
+}
 
 function dec2bin(dec) {
   return dec.toString(2);
@@ -126,7 +148,28 @@ function decryptKeyCiphertext(
   return BigInt(messageNum);
 }
 
-function decryptMessageCiphertext(
+async function decryptKeyCiphertextPedersen(
+  ciphertext: Ciphertext,
+  sharedKey: BigInt,
+): Promise<BigInt> {
+  const messageNum = await decryptPedersen(ciphertext, sharedKey)[0];
+  return BigInt(messageNum);
+}
+
+async function decryptPedersen(ciphertext: Ciphertext, sharedKey: BigInt) {
+  const plaintext = ciphertext.data.map(
+    async (e: BigInt, i: number): Promise<BigInt> => {
+      return new Promise(resolve => {
+        pedersenHash(sharedKey, BigInt(ciphertext.iv) + BigInt(i)).then(hash => {
+          resolve(BigInt(e) - BigInt(hash));
+        });
+      });
+    },
+  );
+  return Promise.all(plaintext);
+}
+
+function decryptMessageCiphertext1(
   ciphertext: Ciphertext,
   sharedKey: BigInt,
 ): string {
@@ -145,9 +188,29 @@ function decryptMessageCiphertext(
   return message;
 }
 
+async function decryptMessageCiphertext(
+  ciphertext: Ciphertext,
+  sharedKey: BigInt,
+): Promise<string> {
+  const messageNum = await decryptPedersen(ciphertext, sharedKey)[0];
+  const messageBits = messageNum.toString(2);
+  const length = messageBits.length + (8 - (messageBits.length % 8));
+  const fullMessageBits = messageBits.padStart(length, '0');
+  const messageBitsArray = fullMessageBits.split('');
+  let message = '';
+  for (let i = 0; i < messageBitsArray.length; i+=8) {
+    const bits = messageBitsArray.slice(i, i+8).join('');
+    const charCode = parseInt(bits, 2);
+    const character = String.fromCharCode(charCode);
+    message = message + character;
+  }
+  return message;
+}
+
 export {
   Keypair,
   decryptKeyCiphertext,
+  decryptKeyCiphertextPedersen,
   decryptDarkForestCiphertext,
   decryptMessageCiphertext,
   ciphertextAsCircuitInputs,
@@ -163,4 +226,7 @@ export {
   getCiphertext,
   setCiphertext,
   modPBigIntNative,
+  serializeUrl,
+  parseUrl,
+  pedersenHash,
 };

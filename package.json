@@ -10,8 +10,11 @@
     "ipfs": "ipfs daemon",
     "build-readme": "node ./scripts/build_readme.js",
     "build-config": "node ./scripts/build_config.js",
-    "compile": "node ./scripts/builder.js circuits-compiled keys true",
-    "compile-solidity": "node ./scripts/solbuilder.js",
+    "deploy:cairo": "node ./scripts/cairoDeploy.js",
+    "call:cairo": "node ./scripts/cairoCall.js",
+    "compile:circom": "node ./scripts/builder.js circuits-compiled keys true",
+    "compile:cairo": "node ./scripts/cairoCompile.js",
+    "compile:solidity": "node ./scripts/solbuilder.js",
     "deploy": "node ./scripts/deploy.js",
     "deploy:dev": "NODE_ENV=development && npm run deploy",
     "deploy:prod": "NODE_ENV=production && npm run deploy",
@@ -21,7 +24,6 @@
     "test": "NODE_ENV=test && npm run build && node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit",
     "dev": "NODE_ENV=development npm run build-config && concurrently 'npm run client' 'npm run server'",
     "prod": "NODE_ENV=production npm run build-config && concurrently 'npm run client' 'npm run server'"
-
   },
   "repository": {
     "type": "git",

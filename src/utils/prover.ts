@@ -1,6 +1,7 @@
 const wasmPath = '/circuits/wasm/';
 const keyPath = '/circuits/keys/';
-const verificationKeyPath = '/circuits/verification_keys/';
+const verificationKeyPath = '/circuits/verification_keys';
+import { post } from './api';
 
 function camelCase(str) {
   return str.split('-').map(_ => {
@@ -9,7 +10,7 @@ function camelCase(str) {
 }
 
 // HELPERS
-async function prove(circuit, inputs) {
+async function prove1(circuit, inputs) {
   // @ts-ignore
   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
     inputs,
@@ -18,6 +19,23 @@ async function prove(circuit, inputs) {
   );
 
   return { proof, publicSignals };
+}
+
+async function prove(circuit, inputs) {
+  console.log('here', inputs);
+  /*
+  return new Promise(resolve => {
+    post('http://localhost:5002/prove', { circuit, inputs }).then(res => {
+      resolve(res.res);
+    });
+  });
+  */
+  return new Promise(resolve => {
+    resolve({
+      fact: '0xf457e4311f8229ab7b08191a6658112a29a962a9f2fe95d7a3d4f1200eef0195',
+      jobKey: '1f38cbf0-7153-4114-9442-44501bfed8eb',
+    });
+  });
 }
 
 async function verify(circuit, proof, publicSignals) {
@@ -46,7 +64,7 @@ export async function proveHash(args) {
     preimage: args[1].toString(),
     key: args[0].toString(),
     hash: args[2].toString(),
-    salt: args[3],
+    salt: args[3].toString(),
   });
 }
 

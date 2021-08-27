@@ -11,8 +11,12 @@ import { ContentInput, ContentElements } from './Content';
 import {
   genSharedKey,
   setKey,
+  pedersenHash,
 } from '../utils/crypto';
-import eth from '../utils/ethAPI';
+import config from '../../config';
+import sol from '../utils/ethAPI';
+import cairo from '../utils/cairoAPI';
+const eth = config.network === 'starknet' ? cairo : sol;
 import ipfs from '../utils/ipfs';
 
 import {
@@ -48,12 +52,13 @@ const NewToken = (props) => {
     props.history.push('/tokens');
   };
 
-  const onSell = () => {
+  const onSell = async () => {
     setLoading(true);
 
     const commitProof = (proof: Snark) => {
       ipfs.addSnark(proof).then((result: IpfsResponse) => {
-        const url = result.path;
+        let url = result.path;
+
         setKey(url, sharedKey);
         eth.api.postUrl(url, keyHash, property, price)
           .then(() => {
@@ -69,7 +74,9 @@ const NewToken = (props) => {
     };
 
     const sharedKey = BigInt(genSharedKey().toString().slice(1));
-    const keyHash = mimc7.multiHash([sharedKey], BigInt(0));
+    const keyHashMimc = mimc7.multiHash([sharedKey], BigInt(0));
+    const keyHashPedersen = await pedersenHash(sharedKey, BigInt(0));
+    const keyHash = config.network === 'starknet' ? keyHashPedersen : keyHashMimc;
 
     setLoadingMessage('generating proof');
     const {
@@ -77,7 +84,7 @@ const NewToken = (props) => {
       computeProperty,
       assertProofInputs,
     } = ContentElements[property];
-    const values = computeProperty(preimage, sharedKey);
+    const values = await computeProperty(preimage, sharedKey);
     const proofInputs = [sharedKey, ...values];
     assertProofInputs(proofInputs);
     prover(proofInputs).then(commitProof);

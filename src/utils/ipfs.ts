@@ -128,6 +128,14 @@ class IpfsConnection {
       });
     });
   }
+
+  public async addStark(json) {
+    return new Promise((resolve) => {
+      this.addToIpfs(JSON.stringify(json)).then(result => {
+        resolve(result);
+      });
+    });
+  }
 }
 
 const ipfs = new IpfsConnection();

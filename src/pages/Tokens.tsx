@@ -7,7 +7,10 @@ import { Header } from '../components/text';
 import PropertyToggle from '../app/PropertyToggle';
 import { ContentElements } from './Content';
 
-import eth from '../utils/ethAPI';
+import config from '../../config';
+import sol from '../utils/ethAPI';
+import cairo from '../utils/cairoAPI';
+const eth = config.network === 'starknet' ? cairo : sol;
 import ipfs from '../utils/ipfs';
 import {
   ContentProperties,
@@ -94,7 +97,7 @@ const Tokens = (props) => {
 
   useEffect(() => {
     if (props.signer) {
-      eth.api.getUrlData().then(urls => {
+      eth.api.getUrlsData().then(urls => {
         setTokens(urls);
       });
     }
