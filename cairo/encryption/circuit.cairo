@@ -51,8 +51,5 @@ func main{output_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwis
   serialize_word(encryption.a)
   serialize_word(encryption.b)
 
-  let (decryption) = Decrypt(encryption, shared_key)
-  serialize_word(decryption)
-
   return ()
 end
