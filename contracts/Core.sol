@@ -74,8 +74,9 @@ contract Core is ERC721URIStorage {
   }
 
   function getHashSalt() public view returns (uint256) {
-    DarkForestCore.SnarkConstants memory s = darkForestCore.snarkConstants();
-    return s.PLANETHASH_KEY;
+    //DarkForestCore.SnarkConstants memory s = darkForestCore.snarkConstants();
+    //return s.PLANETHASH_KEY;
+    return 0;
   }
 
   function checkHash(uint256 hash, uint256 salt) public view returns (DarkForestCore.Planet memory) {
@@ -228,7 +229,7 @@ contract Core is ERC721URIStorage {
     uint256[2] memory _publicKey = publicKeys[_buyer];
     uint256 hash = urlToHash[url];
 
-    require(input[2] == hash, 'Incorrect hash');
+    require(input[0] == hash, 'Incorrect hash');
     require(input[3] == _publicKey[0], 'Used wrong public key');
     require(input[4] == _publicKey[1], 'Used wrong public key');
     require(
@@ -241,8 +242,8 @@ contract Core is ERC721URIStorage {
 
     // alert/send ciphertext to buyer
     uint256[2] memory tokenCiphertext;
-    tokenCiphertext[0] = input[0];
-    tokenCiphertext[1] = input[1];
+    tokenCiphertext[0] = input[1];
+    tokenCiphertext[1] = input[2];
     tokenToCiphertext[tokenId] = tokenCiphertext;
     redeemed[tokenId] = 1;
     return true;

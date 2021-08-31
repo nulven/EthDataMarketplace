@@ -14,7 +14,7 @@ import {
   getKey,
 } from '../utils/crypto';
 import {
-  proveContract,
+  proveEncryption,
 } from '../utils/prover';
 
 import {
@@ -188,7 +188,6 @@ const Token = (props) => {
 
       const verified = await verifier(snark);
       if (!verified) {
-        console.log('not verified');
         throw new Error('Not a valid token');
       }
 
@@ -252,9 +251,9 @@ const Token = (props) => {
       const pubKey = new PubKey([publicKey[0], publicKey[1]]);
       const _key = getKey(url);
 
-      const { proof, publicSignals } = await proveContract(
-        privKey,
+      const { proof, publicSignals } = await proveEncryption(
         _key,
+        privKey,
         pubKey,
       );
 

@@ -7,14 +7,14 @@ include "../utils/ecdh.circom";
 template Main() {
   signal private input key;
   signal private input private_key;
-  signal input hash;
   signal input public_key[2];
+  signal output hash;
   signal output out[2];
 
   component mimc = MultiMiMC7(1, 91);
   mimc.in[0] <== key;
   mimc.k <== 0;
-  mimc.out === hash;
+  mimc.out ==> hash;
 
   // encrypt preimage
   component ecdh = Ecdh();
@@ -23,6 +23,7 @@ template Main() {
   ecdh.private_key <== private_key;
   ecdh.public_key[0] <== public_key[0];
   ecdh.public_key[1] <== public_key[1];
+
 
   shared_key <== ecdh.shared_key;
 

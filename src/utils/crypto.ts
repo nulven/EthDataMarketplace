@@ -6,6 +6,7 @@ import { Ciphertext } from '../types';
 import bigInt from 'big-integer';
 import { BigInteger } from 'big-integer';
 
+
 export const p = bigInt(
   '21888242871839275222246405745257275088548364400416034343698204186575808495' +
   '617',
@@ -93,7 +94,7 @@ function setCiphertext(url: string, ciphertext: any, type: string) {
 
 function getKey(url: string): BigInt {
   const _key = localStorage.getItem(`${url}_key`);
-  if (_key === 'null') {
+  if (_key !== 'null') {
     const key = BigInt(_key);
     return key;
   } else {

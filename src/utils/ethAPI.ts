@@ -19,6 +19,7 @@ import {
   Snark,
 } from '../types';
 
+
 class EthConnection {
   provider: providers.Web3Provider | providers.JsonRpcProvider;
   signer;

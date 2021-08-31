@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import assert from 'assert';
+import { mimc7 } from 'circomlib';
 
 import TextInput from '../../components/TextInput';
 import { Large } from '../../components/text';
@@ -8,11 +9,13 @@ import Resize from '../../components/Resize';
 
 import {
   decryptMessageCiphertext,
+  stringToNum,
 } from '../../utils/crypto';
 import {
   proveHash,
   verifyHash,
 } from '../../utils/prover';
+import eth from '../../utils/ethAPI';
 
 import { InputProps } from '../../types/content';
 
@@ -51,7 +54,6 @@ const Hash = (props: HashProps) => {
     const hashLastHalf = hashArray.slice(hashArray.length - halfSize).join('');
     return `${hashFirstHalf}...${hashLastHalf}`;
   };
-
 
   return (
     <Resize
@@ -98,15 +100,9 @@ const assertContent = (content) => {
 
 const assertMessage = (message) => assert(typeof message === 'string');
 
-import { mimc7 } from 'circomlib';
-import {
-  stringToNum,
-} from '../../utils/crypto';
-import eth from '../../utils/ethAPI';
 const computeProperty = (preimage) => {
   const numPreimage = stringToNum(preimage);
   const salt = eth.salt;
-  //const salt = BigInt('100');
   const hash = mimc7.multiHash([numPreimage], salt);
   return [numPreimage, hash, salt];
 };

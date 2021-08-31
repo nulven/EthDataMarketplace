@@ -32,12 +32,11 @@ async function verify(circuit, proof, publicSignals) {
 }
 
 // PROVERS
-export async function proveEncryption(preimage, privateKey, hash, publicKey) {
+export async function proveEncryption(preimage, privateKey, publicKey) {
   return prove('encryption', {
-    preimage,
-    private_key: privateKey,
-    hash,
-    public_key: publicKey,
+    key: preimage,
+    private_key: privateKey.asCircuitInputs(),
+    public_key: publicKey.asCircuitInputs(),
   });
 }
 
@@ -65,20 +64,6 @@ export async function proveDarkForest(args) {
     key: args[0].toString(),
     hash: args[3].toString(),
     salt: args[4],
-  });
-}
-
-import { PrivKey, PubKey } from 'maci-domainobjs';
-
-export async function proveContract(
-  privateKey: PrivKey,
-  key,
-  publicKey: PubKey,
-) {
-  return prove('contract', {
-    private_key: privateKey.asCircuitInputs(),
-    key: key.toString(),
-    public_key: publicKey.asCircuitInputs(),
   });
 }
 
