@@ -15,9 +15,6 @@ import {
   proveHash,
   verifyHash,
 } from '../../utils/prover';
-import {
-  stringToNum,
-} from '../../utils/crypto';
 
 import { InputProps } from '../../types/content';
 
