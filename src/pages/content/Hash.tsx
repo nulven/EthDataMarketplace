@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import assert from 'assert';
+import { mimc7 } from 'circomlib';
 
 import TextInput from '../../components/TextInput';
 import { Large } from '../../components/text';
@@ -8,6 +9,7 @@ import Resize from '../../components/Resize';
 
 import {
   decryptMessageCiphertext,
+  stringToNum,
 } from '../../utils/crypto';
 import {
   proveHash,
@@ -54,7 +56,6 @@ const Hash = (props: HashProps) => {
     const hashLastHalf = hashArray.slice(hashArray.length - halfSize).join('');
     return `${hashFirstHalf}...${hashLastHalf}`;
   };
-
 
   return (
     <Resize

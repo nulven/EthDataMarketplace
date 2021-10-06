@@ -31,6 +31,7 @@ function parseUrl(parts: BigInt[]): string {
   return newParts.join('');
 }
 
+
 export const p = bigInt(
   '21888242871839275222246405745257275088548364400416034343698204186575808495' +
   '617',
@@ -202,8 +203,12 @@ function setCiphertext(url: string, ciphertext: any, type: string) {
 
 function getKey(url: string): BigInt {
   const _key = localStorage.getItem(`${url}_key`);
-  const key = BigInt(_key);
-  return key;
+  if (_key !== 'null') {
+    const key = BigInt(_key);
+    return key;
+  } else {
+    alert('Key for url not found');
+  }
 }
 
 function setKey(url: string, key: BigInt) {

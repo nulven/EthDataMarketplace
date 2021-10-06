@@ -147,15 +147,9 @@ contract Core is ERC721URIStorage, ContractStorage {
     address _buyer = ownerOf(tokenId);
 
     assert_proof_inputs(input, _buyer, token.contentId);
-    /*
     require(
       EncryptionVerifier.verifyProof(a, b, c, input),
       'Proof invalid!'
-    );
-    */
-    require(
-      EncryptionVerifier.verifyProof(a, b, c, input),
-      ''
     );
 
     execute_redeem(tokenId, token.contentId, input);
@@ -210,6 +204,7 @@ contract Core is ERC721URIStorage, ContractStorage {
     if (publicKeys[_address][0] == 0) {
       publicKeys[_address] = publicKey;
     }
+
     return true;
   }
 }

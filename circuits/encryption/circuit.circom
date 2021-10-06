@@ -24,6 +24,7 @@ template Main() {
   ecdh.public_key[0] <== public_key[0];
   ecdh.public_key[1] <== public_key[1];
 
+
   shared_key <== ecdh.shared_key;
 
   component encrypt = Encrypt();

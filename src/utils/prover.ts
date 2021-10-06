@@ -81,7 +81,6 @@ async function verify(circuit: string, proof: Snark & Stark): Promise<boolean> {
 }
 
 // PROVERS
-// temporarily add sharedKey
 export async function proveEncryption(
   preimage,
   privateKey,
