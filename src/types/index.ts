@@ -1,4 +1,9 @@
 
+enum ZKTypes {
+  SNARK = 'snark',
+  STARK = 'stark',
+}
+
 enum ContentProperties {
   HASH = 'hash',
   BLUR = 'blur',
@@ -47,6 +52,15 @@ const EmptySnark = {
   publicSignals: [],
 };
 
+interface Stark {
+  fact: string,
+  programOutputs: BigInt[],
+}
+const EmptyStark = {
+  fact: '',
+  programOutputs: [],
+};
+
 interface IpfsResponse {
   path: string;
   CID: any;
@@ -62,8 +76,11 @@ interface Ciphertext {
 export {
   ContentProperties,
   TokenStates,
+  ZKTypes,
   Snark,
   EmptySnark,
+  Stark,
+  EmptyStark,
   IpfsResponse,
   Ciphertext,
   EthFunctions,

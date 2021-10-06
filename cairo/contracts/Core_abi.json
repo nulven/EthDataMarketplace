@@ -1,0 +1,413 @@
+[
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "getPublicKey",
+        "outputs": [
+            {
+                "name": "a",
+                "type": "felt"
+            },
+            {
+                "name": "b",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "index",
+                "type": "felt"
+            }
+        ],
+        "name": "getUrl",
+        "outputs": [
+            {
+                "name": "url1",
+                "type": "felt"
+            },
+            {
+                "name": "url2",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "url1",
+                "type": "felt"
+            },
+            {
+                "name": "url2",
+                "type": "felt"
+            }
+        ],
+        "name": "getUrlData",
+        "outputs": [
+            {
+                "name": "url1",
+                "type": "felt"
+            },
+            {
+                "name": "url2",
+                "type": "felt"
+            },
+            {
+                "name": "property",
+                "type": "felt"
+            },
+            {
+                "name": "price",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getUrlIndex",
+        "outputs": [
+            {
+                "name": "index",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "url1",
+                "type": "felt"
+            },
+            {
+                "name": "url2",
+                "type": "felt"
+            }
+        ],
+        "name": "getCreator",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "url1",
+                "type": "felt"
+            },
+            {
+                "name": "url2",
+                "type": "felt"
+            }
+        ],
+        "name": "getNumOfTokens",
+        "outputs": [
+            {
+                "name": "num",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "url1",
+                "type": "felt"
+            },
+            {
+                "name": "url2",
+                "type": "felt"
+            },
+            {
+                "name": "index",
+                "type": "felt"
+            }
+        ],
+        "name": "getToken",
+        "outputs": [
+            {
+                "name": "token",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "token_id",
+                "type": "felt"
+            }
+        ],
+        "name": "getCiphertext",
+        "outputs": [
+            {
+                "name": "a",
+                "type": "felt"
+            },
+            {
+                "name": "b",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getNumOfProperties",
+        "outputs": [
+            {
+                "name": "num",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "url1",
+                "type": "felt"
+            },
+            {
+                "name": "url2",
+                "type": "felt"
+            }
+        ],
+        "name": "getProperty",
+        "outputs": [
+            {
+                "name": "property",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "index",
+                "type": "felt"
+            }
+        ],
+        "name": "getPropertyId",
+        "outputs": [
+            {
+                "name": "property",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "init",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "property",
+                "type": "felt"
+            }
+        ],
+        "name": "createProperty",
+        "outputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "_seller",
+                "type": "felt"
+            },
+            {
+                "name": "url1",
+                "type": "felt"
+            },
+            {
+                "name": "url2",
+                "type": "felt"
+            },
+            {
+                "name": "public_key_a",
+                "type": "felt"
+            },
+            {
+                "name": "public_key_b",
+                "type": "felt"
+            },
+            {
+                "name": "key_hash",
+                "type": "felt"
+            },
+            {
+                "name": "property",
+                "type": "felt"
+            },
+            {
+                "name": "price",
+                "type": "felt"
+            }
+        ],
+        "name": "postUrl",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "buyer",
+                "type": "felt"
+            },
+            {
+                "name": "url1",
+                "type": "felt"
+            },
+            {
+                "name": "url2",
+                "type": "felt"
+            },
+            {
+                "name": "public_key_a",
+                "type": "felt"
+            },
+            {
+                "name": "public_key_b",
+                "type": "felt"
+            }
+        ],
+        "name": "buyToken",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "buyer",
+                "type": "felt"
+            },
+            {
+                "name": "url1",
+                "type": "felt"
+            },
+            {
+                "name": "url2",
+                "type": "felt"
+            },
+            {
+                "name": "public_key_a",
+                "type": "felt"
+            },
+            {
+                "name": "public_key_b",
+                "type": "felt"
+            },
+            {
+                "name": "sig_r",
+                "type": "felt"
+            },
+            {
+                "name": "sig_s",
+                "type": "felt"
+            }
+        ],
+        "name": "buyToken_auth",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "seller",
+                "type": "felt"
+            },
+            {
+                "name": "tokenId",
+                "type": "felt"
+            }
+        ],
+        "name": "redeem",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "seller",
+                "type": "felt"
+            },
+            {
+                "name": "tokenId",
+                "type": "felt"
+            },
+            {
+                "name": "sig_r",
+                "type": "felt"
+            },
+            {
+                "name": "sig_s",
+                "type": "felt"
+            }
+        ],
+        "name": "redeem_auth",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    }
+]

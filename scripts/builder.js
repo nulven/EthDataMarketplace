@@ -118,7 +118,6 @@ for (circuitName of circuitsList.split(',')) {
     execSync('rm witness.wtns', { stdio: 'inherit' });
     execSync('rm circuit.r1cs', { stdio: 'inherit' });
     execSync('rm circuit.sym', { stdio: 'inherit' });
-    execSync('rm public.json', { stdio: 'inherit' });
     execSync('rm proof.json', { stdio: 'inherit' });
   } catch (error) {
     console.log(error);

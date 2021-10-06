@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 
+import config from '../../config';
 import { Large } from '../components/text';
 import eth from '../utils/ethAPI';
 

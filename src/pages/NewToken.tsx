@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { mimc7 } from 'circomlib';
 
 import { Button } from '../components/Button';
 import { Large } from '../components/text';
@@ -11,7 +10,9 @@ import { ContentInput, ContentElements } from './Content';
 import {
   genSharedKey,
   setKey,
+  hash,
 } from '../utils/crypto';
+import config from '../../config';
 import eth from '../utils/ethAPI';
 import ipfs from '../utils/ipfs';
 
@@ -19,6 +20,7 @@ import {
   ContentProperties,
   IpfsResponse,
   Snark,
+  Stark,
 } from '../types';
 
 
@@ -48,13 +50,15 @@ const NewToken = (props) => {
     props.history.push('/tokens');
   };
 
-  const onSell = () => {
+  const onSell = async () => {
     setLoading(true);
 
-    const commitProof = (proof: Snark) => {
-      ipfs.addSnark(proof).then((result: IpfsResponse) => {
-        const url = result.path;
+    const commitProof = (proof: Snark | Stark) => {
+      ipfs.addProof(proof).then((result: IpfsResponse) => {
+        let url = result.path;
+
         setKey(url, sharedKey);
+
         eth.api.postUrl(url, keyHash, property, price)
           .then(() => {
             sendToTokens();
@@ -68,8 +72,8 @@ const NewToken = (props) => {
       });
     };
 
-    const sharedKey = BigInt(genSharedKey().toString().slice(1));
-    const keyHash = mimc7.multiHash([sharedKey], BigInt(0));
+    const sharedKey = await genSharedKey();
+    const keyHash = await hash(sharedKey, BigInt(0));
 
     setLoadingMessage('generating proof');
     const {
@@ -77,7 +81,7 @@ const NewToken = (props) => {
       computeProperty,
       assertProofInputs,
     } = ContentElements[property];
-    const values = computeProperty(preimage, sharedKey);
+    const values = await computeProperty(preimage, sharedKey);
     const proofInputs = [sharedKey, ...values];
     assertProofInputs(proofInputs);
     prover(proofInputs).then(commitProof);

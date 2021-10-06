@@ -1,7 +1,15 @@
 import ipfsAPI from 'ipfs-http-client';
 import { BufferList } from 'bl';
 
-import { Snark } from '../types';
+import {
+  Snark,
+  Stark,
+  IpfsResponse,
+} from '../types';
+import config from '../../config';
+
+
+const ZK = config.zk;
 
 class IpfsConnection {
   api: any;
@@ -95,8 +103,14 @@ class IpfsConnection {
     }
   }
 
+  public async getProof(url: string): Promise<Snark | Stark> {
+    return this.getter(url);
+  }
+
+  getter = ZK === 'snark' ? this.getSnark : this.getStark;
+
   public async getSnark(url: string): Promise<Snark> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       this.getFromIpfs(url).then(content => {
         const jsonString = content.toString();
         const json = JSON.parse(jsonString);
@@ -113,7 +127,21 @@ class IpfsConnection {
     });
   }
 
-  public async addToIpfs(fileToUpload) {
+  public async getStark(url: string): Promise<Stark> {
+    return new Promise(resolve => {
+      this.getFromIpfs(url).then(content => {
+        const jsonString = content.toString();
+        const json = JSON.parse(jsonString);
+        const stark = {
+          fact: json.fact,
+          programOutputs: json.programOutputs.map(BigInt),
+        };
+        resolve(stark);
+      });
+    });
+  }
+
+  public async addToIpfs(fileToUpload): Promise<IpfsResponse> {
     return new Promise((resolve) => {
       this.api.add(Buffer.from(fileToUpload)).then(result => {
         resolve(result);
@@ -121,9 +149,27 @@ class IpfsConnection {
     });
   }
 
-  public async addSnark(json) {
+  adder = ZK === 'snark' ? this.addSnark : this.addStark;
+
+  public async addProof(json): Promise<IpfsResponse> {
+    return this.adder(json);
+  }
+
+  async addSnark(json: Snark): Promise<IpfsResponse> {
     return new Promise((resolve) => {
       this.addToIpfs(JSON.stringify(json)).then(result => {
+        resolve(result);
+      });
+    });
+  }
+
+  async addStark(json: Stark): Promise<IpfsResponse> {
+    const newJson = {
+      fact: json.fact,
+      programOutputs: json.programOutputs.map(_ => _.toString()),
+    };
+    return new Promise(resolve => {
+      this.addToIpfs(JSON.stringify(newJson)).then(result => {
         resolve(result);
       });
     });

@@ -7,13 +7,17 @@ import { Header } from '../components/text';
 import PropertyToggle from '../app/PropertyToggle';
 import { ContentElements } from './Content';
 
+import config from '../../config';
 import eth from '../utils/ethAPI';
 import ipfs from '../utils/ipfs';
+import { Parsers } from '../utils/parsers';
 import {
   ContentProperties,
   Snark,
+  Stark,
 } from '../types';
 
+const ZK = config.zk;
 
 const TokensWrapper = styled.div`
   display: flex;
@@ -64,15 +68,9 @@ const Token = (props: TokenProps) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    ipfs.getSnark(props.url).then((snark: Snark) => {
-      if (props.property === ContentProperties.HASH) {
-        setProperty(BigInt(snark.publicSignals[3]));
-      } else if (props.property === ContentProperties.BLUR) {
-        const _blurredImage = snark.publicSignals.slice(1, 17).map(Number);
-        setProperty(_blurredImage);
-      } else if (props.property === ContentProperties.DF) {
-        setProperty(BigInt(snark.publicSignals[4]));
-      }
+    ipfs.getProof(props.url).then((proof: Snark | Stark) => {
+      const { contentProperty } = Parsers[ZK][props.property](proof);
+      setProperty(contentProperty);
       setLoading(false);
     });
   }, []);
@@ -95,14 +93,14 @@ const Tokens = (props) => {
 
   useEffect(() => {
     if (props.signer) {
-      eth.api.getUrlData().then(urls => {
-        setTokens(urls);
+      eth.api.getContents().then(contents => {
+        setTokens(contents);
       });
     }
   }, [props.signer, property]);
 
-  const sendToToken = (hash) => () => {
-    props.history.push(`/tokens/${hash}`);
+  const sendToToken = (contentId) => () => {
+    props.history.push(`/tokens/${contentId}`);
   };
 
   const sendToNewToken = () => {
@@ -123,7 +121,7 @@ const Tokens = (props) => {
           key={_.url}
           url={_.url}
           property={_.property}
-          onClick={sendToToken(_.url.toString())}
+          onClick={sendToToken(_.id.toString())}
         />)}
       </PostsWrapper>
     </>

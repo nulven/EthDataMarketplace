@@ -1,6 +1,12 @@
+import { post } from './api';
+import { Snark, Stark } from '../types';
+import config from '../../config';
+const STARKWARE_APP = config.starkwareApp;
+
 const wasmPath = '/circuits/wasm/';
 const keyPath = '/circuits/keys/';
-const verificationKeyPath = '/circuits/verification_keys/';
+const verificationKeyPath = '/circuits/verification_keys';
+const ZK = config.zk;
 
 function camelCase(str) {
   return str.split('-').map(_ => {
@@ -9,7 +15,7 @@ function camelCase(str) {
 }
 
 // HELPERS
-async function prove(circuit, inputs) {
+async function proveSnark(circuit, inputs): Promise<Snark> {
   // @ts-ignore
   const { proof, publicSignals } = await snarkjs.groth16.fullProve(
     inputs,
@@ -20,23 +26,70 @@ async function prove(circuit, inputs) {
   return { proof, publicSignals };
 }
 
-async function verify(circuit, proof, publicSignals) {
-  const vKey = await fetch(verificationKeyPath + camelCase(circuit) + '.json')
-    .then(res => {
-      return res.json();
+async function proveStark(circuit, inputs): Promise<Stark> {
+  return new Promise((resolve, reject) => {
+    post(`${STARKWARE_APP}/prove`, { circuit, inputs }).then(res => {
+      const proof = {
+        fact: res.res.fact,
+        programOutputs: res.res.programOutputs.map(BigInt),
+      };
+      resolve(proof);
+    }).catch(err => {
+      reject(err);
     });
+  });
+}
 
-  // @ts-ignore
-  const res = await snarkjs.groth16.verify(vKey, publicSignals, proof);
-  return res;
+async function prove(circuit, inputs): Promise<Snark | Stark> {
+  const prover = ZK === 'snark' ? proveSnark : proveStark;
+  return prover(circuit, inputs);
+}
+
+async function verifyStark(
+  circuit: string,
+  proof: Snark & Stark,
+): Promise<boolean> {
+  // send to sharp
+  if ('programOutputs' in proof) {
+    return new Promise(resolve => resolve(true));
+  } else {
+    throw new Error('proof is not a STARK');
+  }
+}
+
+async function verifySnark(
+  circuit: string,
+  proof: Snark & Stark,
+): Promise<boolean> {
+  if ('publicSignals' in proof) {
+    const vKey = await fetch(verificationKeyPath + camelCase(circuit) + '.json')
+      .then(res => {
+        return res.json();
+      });
+
+    // @ts-ignore
+    const res = await snarkjs.groth16.verify(vKey, publicSignals, proof);
+    return res;
+  } else {
+    throw new Error('proof is not a SNARK');
+  }
+}
+
+async function verify(circuit: string, proof: Snark & Stark): Promise<boolean> {
+  const verifier = ZK === 'snark' ? verifySnark : verifyStark;
+  return verifier(circuit, proof);
 }
 
 // PROVERS
-export async function proveEncryption(preimage, privateKey, publicKey) {
+export async function proveEncryption(
+  preimage,
+  privateKey,
+  publicKey,
+) {
   return prove('encryption', {
-    key: preimage,
-    private_key: privateKey.asCircuitInputs(),
-    public_key: publicKey.asCircuitInputs(),
+    key: preimage.toString(),
+    seller_private_key: privateKey.rawPrivKey.toString(),
+    buyer_public_key: publicKey.asCircuitInputs(),
   });
 }
 
@@ -44,8 +97,7 @@ export async function proveHash(args) {
   return prove('hash', {
     preimage: args[1].toString(),
     key: args[0].toString(),
-    hash: args[2].toString(),
-    salt: args[3],
+    salt: args[2].toString(),
   });
 }
 
@@ -67,30 +119,8 @@ export async function proveDarkForest(args) {
   });
 }
 
-
 // VERIFIERS
-export async function verifyEncryption(proof) {
-  return verify('encryption', proof.proof, proof.publicSignals);
-}
-
-export async function verifyHash(proof) {
-  return verify('hash', proof.proof, proof.publicSignals);
-}
-
-export async function verifyBlur(proof) {
-  return verify('blur-image', proof.proof, proof.publicSignals);
-}
-
-export async function verifyDarkForest(proof) {
-  return verify('dark-forest', proof.proof, proof.publicSignals);
-}
-
-// FULL VERIFIERS
-export async function fullVerifyEncryption(key, hash) {
-  const { proof, publicSignals } = await prove('encryption', {
-    x: key,
-    hash: hash,
-  });
-
-  return verify('encryption', proof, publicSignals);
-}
+export const verifyEncryption = async (proof) => verify('encryption', proof);
+export const verifyHash = async (proof) => verify('hash', proof);
+export const verifyBlur = async (proof) => verify('blur', proof);
+export const verifyDarkForest = async (proof) => verify('dark-forest', proof);

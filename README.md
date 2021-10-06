@@ -2,16 +2,16 @@
 
 ## How it works
 
-1. Creator generates a [Property Proof](### Property Proofs) which:
+1. Creator generates a [Property Proof](#property-proofs) which:
    - asserts they have some content which satisfies a particular property (`f(data) = property`)
    - outputs the encryption of the data with a randomly generated key (`Enc(key, pk)`)
    - outputs the hash of the randomly generated key (`H(key)`)
 2. The creator publishes the proof on IPFS and registers the IPFS URI and the key hash on a smart contract
 3. Using the IPFS URI on the contract, the buyer sees the property and verifies that:
-   - the [Property Proof](### Property Proofs) is valid
-   - the output key hash in the proof matches the key hash stored on the contract (if this is unchecked the creator could maliciously submit two different keys to the smart contract and the [Property Proof](### Property Proofs), so the buyer won't be able to successfully retrieve the content)
+   - the [Property Proof](#property-proofs) is valid
+   - the output key hash in the proof matches the key hash stored on the contract (if this is unchecked the creator could maliciously submit two different keys to the smart contract and the [Property Proof](#property-proofs), so the buyer won't be able to successfully retrieve the content)
 4. if valid, the buyer will purchase the token and lock ETH in the contract
-5. the creator will generate an [Encryption Proof](### Encryption Proof) which:
+5. the creator will generate an [Encryption Proof](#encryption-proof) which:
    - asserts that they have the preimage to the key hash stored on the contract (`H(preimage) = H(key)`)
    - outputs the encryption of the preimage with the buyer's public key (`Enc(preimage, pk)`)
 if the proof is valid, the ETH is redeemed from the contract
@@ -22,7 +22,7 @@ if the proof is valid, the ETH is redeemed from the contract
 
 ## Circuits
 
-The circuits are divided into two types [Encryption Proofs](### Encryption Proof) and [Property Proofs](### Property Proofs). The *Encryption Proof* is the proof sent over the contract by the seller to verify the decryption key exchange. The *Property Proofs* are the proofs published on IPFS by the seller to commit to the property of the content.
+The circuits are divided into two types [Encryption Proofs](#encryption-proof) and [Property Proofs](#property-proofs). The *Encryption Proof* is the proof sent over the contract by the seller to verify the decryption key exchange. The *Property Proofs* are the proofs published on IPFS by the seller to commit to the property of the content.
 
 ### Encryption Proof
 

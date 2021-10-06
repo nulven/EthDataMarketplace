@@ -10,8 +10,11 @@
     "ipfs": "ipfs daemon",
     "build-readme": "node ./scripts/build_readme.js",
     "build-config": "node ./scripts/build_config.js",
-    "compile": "node ./scripts/builder.js circuits-compiled keys true",
-    "compile-solidity": "node ./scripts/solbuilder.js",
+    "deploy:cairo": "node ./scripts/cairoDeploy.js",
+    "call:cairo": "node ./scripts/cairoCall.js",
+    "compile:circom": "node ./scripts/builder.js circuits-compiled keys true",
+    "compile:cairo": "node ./scripts/cairoCompile.js",
+    "compile:solidity": "node ./scripts/solbuilder.js",
     "deploy": "node ./scripts/deploy.js",
     "deploy:dev": "NODE_ENV=development && npm run deploy",
     "deploy:prod": "NODE_ENV=production && npm run deploy",
@@ -21,7 +24,6 @@
     "test": "NODE_ENV=test && npm run build && node --experimental-vm-modules node_modules/jest/bin/jest.js --forceExit",
     "dev": "NODE_ENV=development npm run build-config && concurrently 'npm run client' 'npm run server'",
     "prod": "NODE_ENV=production npm run build-config && concurrently 'npm run client' 'npm run server'"
-
   },
   "repository": {
     "type": "git",
@@ -50,6 +52,7 @@
     "assert": "^2.0.0",
     "bl": "^5.0.0",
     "bootstrap": "3.3.7",
+    "brython": "^3.9.5",
     "chartist": "0.10.1",
     "chartist-plugin-legend": "^0.6.2",
     "circom": "^0.5.35",
@@ -86,6 +89,7 @@
     "nodemon": "^2.0.7",
     "path": "^0.12.7",
     "pg": "^8.5.1",
+    "python-bridge": "^1.1.0",
     "rc-align": "^2.3.5",
     "rc-slider": "^9.3.1",
     "react": "^16.13.1",

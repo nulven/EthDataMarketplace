@@ -15,7 +15,6 @@ import {
   proveHash,
   verifyHash,
 } from '../../utils/prover';
-import eth from '../../utils/ethAPI';
 
 import { InputProps } from '../../types/content';
 
@@ -62,12 +61,8 @@ const Hash = (props: HashProps) => {
       slice={sliceFunction}
       display={display}
     >
-      <HashWrapper ref={ref => {
-        setContainerRef(ref);
-      }}>
-        <HashText ref={ref => {
-          setContentRef(ref);
-        }}>{display}</HashText>
+      <HashWrapper ref={setContainerRef}>
+        <HashText ref={setContentRef}>{display}</HashText>
       </HashWrapper>
     </Resize>
   );
@@ -100,19 +95,17 @@ const assertContent = (content) => {
 
 const assertMessage = (message) => assert(typeof message === 'string');
 
-const computeProperty = (preimage) => {
+const computeProperty = (preimage): any[] => {
   const numPreimage = stringToNum(preimage);
-  const salt = eth.salt;
-  const hash = mimc7.multiHash([numPreimage], salt);
-  return [numPreimage, hash, salt];
+  const salt = BigInt('0');
+  return [numPreimage, salt];
 };
 
 const assertProofInputs = (args: any[]) => {
-  assert(args.length === 4);
+  assert(args.length === 3);
   assert(typeof args[0] === 'bigint');
   assert(typeof args[1] === 'bigint');
   assert(typeof args[2] === 'bigint');
-  assert(typeof args[3] === 'bigint');
 };
 
 const json = {

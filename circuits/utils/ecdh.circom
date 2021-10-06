@@ -11,14 +11,16 @@ template Ecdh() {
 
   signal output shared_key;
 
-  component privBits = Num2Bits(253);
+  var n = 250
+
+  component privBits = Num2Bits(n);
   privBits.in <== private_key;
 
-  component mulFix = EscalarMulAny(253);
+  component mulFix = EscalarMulAny(n);
   mulFix.p[0] <== public_key[0];
   mulFix.p[1] <== public_key[1];
 
-  for (var i = 0; i < 253; i++) {
+  for (var i = 0; i < n; i++) {
     mulFix.e[i] <== privBits.out[i];
   }
 

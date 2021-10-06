@@ -1,0 +1,1 @@
+{"abi":[{"inputs":[{"internalType":"bytes32","name":"fact","type":"bytes32"}],"name":"isValid","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"}],"address":"0x1cE427292A0dA0313137A63Bb0f11423Bdb001A1"}
