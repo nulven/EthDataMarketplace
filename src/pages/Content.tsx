@@ -70,12 +70,13 @@ const Content = (props: ContentProps) => {
   useEffect(() => {
     assertContent(props.content);
     if (props.secretKey) {
-      const _message = decrypt(
+      decrypt(
         props.content.cipher,
         props.secretKey,
-      );
-      assertMessage(_message);
-      setMessage(_message);
+      ).then(_message => {
+        assertMessage(_message);
+        setMessage(_message);
+      });
     }
   }, [props]);
 

@@ -79,9 +79,6 @@ func ec_mult{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
   let (rem) = bitwise_and(m, 1)
   if rem == 0:
     let (dbl) = ec_double(point, 1)
-    let n = point.x
-    let x = dbl.x
-    let y = dbl.y
     let m_over_2 = m/2
     let (out) = ec_mult(m_over_2, dbl)
     return (out)

@@ -13,43 +13,55 @@ struct PublicKey:
   member b : felt
 end
 
+struct EncryptionOutput:
+  member hash : felt
+
+  member encryption_1 : felt
+  member encryption_2 : felt
+
+  member public_key_1 : felt
+  member public_key_2 : felt
+end
+
 func main{output_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() -> ():
   alloc_locals
 
-  local key: felt
-  local private_key: felt
-  local hash: felt
-  local public_key: PublicKey*
+  local key
+  local seller_private_key
+  local buyer_public_key: PublicKey*
 
   %{
     ids.key = program_input['key']
-    ids.private_key = program_input['private_key']
-    ids.hash = program_input['hash']
+    ids.seller_private_key = program_input['seller_private_key']
 
-    public_key1 = program_input['public_key']
-    ids.public_key = public_key = segments.add()
-    for i, val in enumerate(public_key1):
-      memory[public_key + i] = val
+    _buyer_public_key = program_input['buyer_public_key']
+    ids.buyer_public_key = buyer_public_key = segments.add()
+    for i, val in enumerate(_buyer_public_key):
+      memory[buyer_public_key + i] = val
   %}
 
-  serialize_word(key)
-
+  let output = cast(output_ptr, EncryptionOutput*)
+  let output_ptr = output_ptr + EncryptionOutput.SIZE
   local output_ptr: felt* = output_ptr
 
-  # check key hash
+  assert output.public_key_1 = buyer_public_key.a
+  assert output.public_key_2 = buyer_public_key.b
+
+  # output key hash
   let (hash_out) = get_hash_pedersen(key, 0)
+  assert output.hash = hash_out
   local pedersen_ptr: HashBuiltin* = pedersen_ptr
-  assert hash_out = hash
 
   # generate shared key
-  let point0 = Point(x=public_key.a, y=public_key.b)
-  let (point: Point) = ec_mult(private_key, point0)
+  let public_key_point = Point(x=buyer_public_key.a, y=buyer_public_key.b)
+  let (point: Point) = ec_mult(seller_private_key, public_key_point)
   let shared_key = point.x
 
   # encrypt key
   let (encryption: Ciphertext) = Encrypt(key, shared_key)
-  serialize_word(encryption.a)
-  serialize_word(encryption.b)
+
+  assert output.encryption_1 = encryption.a
+  assert output.encryption_2 = encryption.b
 
   return ()
 end

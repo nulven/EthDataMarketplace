@@ -1,10 +1,14 @@
 // params is given as a JSON
-export function get(endpoint, headers) {
-  return fetch(endpoint, {headers: headers}).then(res => {
+export function get(endpoint) {
+  return fetch(endpoint, {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    },
+  }).then(res => {
     if(res.ok){
-      return res.json()
+      return res.json();
     } else{
-      return res
+      return res;
     }
   });
 }

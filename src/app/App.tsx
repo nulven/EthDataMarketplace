@@ -17,14 +17,16 @@ import ChooseUser from '../pages/ChooseUser';
 import eth from '../utils/ethAPI';
 
 const INFURA_ID = '';
+const chain = 'goerli';
+/*
 const walletLink = new WalletLink({
   appName: 'coinbase',
 });
-const chain = 'ropsten';
 const walletLinkProvider = walletLink.makeWeb3Provider(
   `https://${chain}.infura.io/v3/${INFURA_ID}`,
   1,
 );
+*/
 const web3Modal = new Web3Modal({
   network: chain,
   cacheProvider: true, // optional
@@ -43,6 +45,7 @@ const web3Modal = new Web3Modal({
     /*torus: {
       package: Torus,
     },*/
+    /*
     'custom-walletlink': {
       display: {
         logo: 'https://play-lh.googleusercontent.com/PjoJoG27miSglVBXoXrxBSLveV6e3EeBPpNY55aiUUBM9Q1RCETKCOqdOkX2ZydqVf0',
@@ -55,6 +58,7 @@ const web3Modal = new Web3Modal({
         return provider;
       },
     },
+    */
   },
 });
 
@@ -115,7 +119,7 @@ const App = () => {
           signer={signer}
         />
         <Page
-          path="/tokens/:url"
+          path="/tokens/:id"
           navbar={true}
           Subpage={Token}
           signer={signer}

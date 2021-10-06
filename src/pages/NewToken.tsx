@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { mimc7 } from 'circomlib';
 
 import { Button } from '../components/Button';
 import { Large } from '../components/text';
@@ -11,18 +10,17 @@ import { ContentInput, ContentElements } from './Content';
 import {
   genSharedKey,
   setKey,
-  pedersenHash,
+  hash,
 } from '../utils/crypto';
 import config from '../../config';
-import sol from '../utils/ethAPI';
-import cairo from '../utils/cairoAPI';
-const eth = config.network === 'starknet' ? cairo : sol;
+import eth from '../utils/ethAPI';
 import ipfs from '../utils/ipfs';
 
 import {
   ContentProperties,
   IpfsResponse,
   Snark,
+  Stark,
 } from '../types';
 
 
@@ -55,11 +53,12 @@ const NewToken = (props) => {
   const onSell = async () => {
     setLoading(true);
 
-    const commitProof = (proof: Snark) => {
-      ipfs.addSnark(proof).then((result: IpfsResponse) => {
+    const commitProof = (proof: Snark | Stark) => {
+      ipfs.addProof(proof).then((result: IpfsResponse) => {
         let url = result.path;
 
         setKey(url, sharedKey);
+
         eth.api.postUrl(url, keyHash, property, price)
           .then(() => {
             sendToTokens();
@@ -73,10 +72,8 @@ const NewToken = (props) => {
       });
     };
 
-    const sharedKey = BigInt(genSharedKey().toString().slice(1));
-    const keyHashMimc = mimc7.multiHash([sharedKey], BigInt(0));
-    const keyHashPedersen = await pedersenHash(sharedKey, BigInt(0));
-    const keyHash = config.network === 'starknet' ? keyHashPedersen : keyHashMimc;
+    const sharedKey = await genSharedKey();
+    const keyHash = await hash(sharedKey, BigInt(0));
 
     setLoadingMessage('generating proof');
     const {

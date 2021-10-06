@@ -1,4 +1,4 @@
-import { Snark } from '../types';
+import { Snark, Stark } from '../types';
 
 interface InputProps {
   preimage: string;
@@ -16,7 +16,7 @@ interface ContentSkeleton {
   list: (props: DisplayProps) => JSX.Element;
   decrypt: (ciphertext: any, key: BigInt) => any;
   computeProperty: (preimage: any, key?: BigInt) => any[];
-  prover: (...args: any[]) => Promise<Snark>;
+  prover: (...args: any[]) => Promise<Snark | Stark>;
   verifier: (proof: Snark) => Promise<boolean>;
   assertProofInputs: (args: any[]) => void;
   assertContent: (content: any) => void;

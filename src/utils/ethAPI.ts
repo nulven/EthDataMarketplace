@@ -1,28 +1,34 @@
 import * as dotenv from 'dotenv';
-dotenv.config({ path: '/home/nulven/EthDataMarketplace/.env' });
+dotenv.config({ path: '/home/nulven/CairoDataMarketplace/.env' });
 import { Contract, providers } from 'ethers';
+import { Parsers } from './parsers';
 import { modPBigIntNative } from './crypto';
 import config from '../../config';
 
 import contractJSON from '../../public/contracts/Core.json';
+import gettersContractJSON from '../../public/contracts/Getters.json';
 
 import { OurErrors, SolidityErrors } from './errors';
 
-import { genPrivKey, genPubKey } from 'maci-crypto';
-import { Keypair, PrivKey, PubKey } from 'maci-domainobjs';
+import { PrivKey, PubKey } from 'maci-domainobjs';
 import {
   decryptKeyCiphertext,
+  sharedKey,
+  genPrivKey,
 } from '../utils/crypto';
 import {
-  ContentProperties,
   Ciphertext,
   Snark,
+  Stark,
 } from '../types';
+
+const ZK = config.zk;
 
 class EthConnection {
   provider: providers.Web3Provider | providers.JsonRpcProvider;
   signer;
   contract: Contract;
+  gettersContract: Contract;
   gasPrice: number;
   gasLimit: number;
   api: any;
@@ -51,7 +57,8 @@ class EthConnection {
   public async setProvider(provider, setSigner) {
     this.provider = provider;
     this.signerHook = setSigner;
-    await this.setSigner();
+    const [address] = await provider.listAccounts();
+    await this.setSigner(address);
   }
 
   public async setSigner(_address?: string) {
@@ -64,7 +71,12 @@ class EthConnection {
       }
       await this.setAddress();
       this.connect();
-      this.api.init(this.contract, this.address, this.publicKey);
+      this.api.init(
+        this.contract,
+        this.gettersContract,
+        this.address,
+        this.publicKey,
+      );
       this.download();
       this.signerHook(this.signer);
     }
@@ -81,73 +93,67 @@ class EthConnection {
   public async setAddress() {
     if (this.signer) {
       this.address = await this.signer.getAddress();
-      this.loadKeys();
+      await this.loadKeys();
       this.setCachedSettings();
     }
   }
 
-  public loadKeys() {
+  public async loadKeys() {
     let _privateKey;
-    const privateKeyMaybe = localStorage.getItem(`${this.address}_private_key`);
-    if (privateKeyMaybe) {
+    let _publicKey;
+    const privateKeyMaybe = localStorage.getItem(
+      `${this.address}_private_key_stark`);
+    const publicKeyMaybe = localStorage.getItem(
+      `${this.address}_public_key_stark`);
+    if (privateKeyMaybe && publicKeyMaybe) {
       _privateKey = privateKeyMaybe;
+      _publicKey = publicKeyMaybe.split(',');
     } else {
-      _privateKey = genPrivKey().toString().slice(0,-1);
-      localStorage.setItem(`${this.address}_private_key`, _privateKey);
+      const keys = await genPrivKey();
+      _privateKey = keys.privKey;
+      _publicKey = keys.pubKey;
+      localStorage.setItem(`${this.address}_private_key_stark`, _privateKey);
+      localStorage.setItem(`${this.address}_public_key_stark`, _publicKey);
     }
-    const _publicKey: bigint[] = genPubKey(BigInt(_privateKey))
-      .map(_ => BigInt(_));
 
     this.privateKey = BigInt(_privateKey);
-    this.publicKey = _publicKey;
+    this.publicKey = _publicKey.map(BigInt);
   }
 
   public connect() {
-    const { env } = config;
     const contractABI = contractJSON.abi;
     const contractAddress = contractJSON.address;
-    const contract = new Contract(contractAddress, contractABI, this.signer);
-    this.contract = contract;
+    const gettersContractABI = gettersContractJSON.abi;
+    const gettersContractAddress = gettersContractJSON.address;
+    this.contract = new Contract(contractAddress, contractABI, this.signer);
+    this.gettersContract = new Contract(
+      gettersContractAddress,
+      gettersContractABI,
+      this.signer,
+    );
   }
 
-  retrieveCiphertext(
+  async retrieveCiphertext(
     _keyCiphertext,
     publicKey: BigInt[],
     property: string,
-    snark: Snark,
-  ): [any, BigInt] {
+    proof: Snark | Stark,
+  ): Promise<[any, BigInt]> {
     const privKey = new PrivKey(this.privateKey);
     const pubKey = new PubKey(publicKey);
-    const sharedKey = Keypair.genEcdhSharedKey(privKey, pubKey);
+    const _sharedKey = await sharedKey(privKey, pubKey);
 
-    const _key = decryptKeyCiphertext(_keyCiphertext, sharedKey);
+    const _key = await decryptKeyCiphertext(_keyCiphertext, _sharedKey);
 
-    const { publicSignals } = snark;
-    if (property === ContentProperties.HASH) {
-      const _hashCiphertext = {
-        iv: BigInt(publicSignals[1]),
-        data: [BigInt(publicSignals[2])],
-      };
-      return [_hashCiphertext, _key];
-    } else if (property === ContentProperties.BLUR) {
-      const _blurredImage = publicSignals.slice(1, 17).map(Number);
-      return [_blurredImage, _key];
-    } else if (property === ContentProperties.DF) {
-      const _hashCiphertext = {
-        iv: BigInt(publicSignals[1]),
-        data: [
-          BigInt(publicSignals[2]),
-          BigInt(publicSignals[3]),
-        ],
-      };
-      return [_hashCiphertext, _key];
-    }
+    const _ciphertext = Parsers[ZK][property](proof).ciphertext;
+    return [_ciphertext, _key];
   }
 }
 
 class EthAPI {
 
   contract: Contract;
+  gettersContract: Contract;
   address: string;
   publicKey: BigInt[];
 
@@ -155,8 +161,14 @@ class EthAPI {
     this.createAPI();
   }
 
-  init(contract: Contract, address: string, publicKey: BigInt[]) {
+  init(
+    contract: Contract,
+    gettersContract: Contract,
+    address: string,
+    publicKey: BigInt[],
+  ) {
     this.contract = contract;
+    this.gettersContract = gettersContract;
     this.address = address;
     this.publicKey = publicKey;
     this.createAPI();
@@ -187,6 +199,7 @@ class EthAPI {
         const res = await apiCall(...args);
         return res;
       } catch (error) {
+        console.log(error);
         const errorMessage = error.message.replace(/\\"/g, '"');
         const strList = errorMessage.match('(?<=error\\":).*(?=}", error)');
         if (!strList) {
@@ -209,15 +222,15 @@ class EthAPI {
   }
 
   public async _getProperties(): Promise<string[]> {
-    return this.contract.getProperties();
+    return this.gettersContract.getProperties();
   }
 
-  public async _getUrls(): Promise<string[]> {
-    return this.contract.getUrls();
+  public async _getContent(contentId: BigInt) {
+    return this.contract.getContent(contentId);
   }
 
-  public async _getUrlData(): Promise<string[]> {
-    return this.contract.getUrlData();
+  public async _getContents(): Promise<string[]> {
+    return this.gettersContract.getContents();
   }
 
   public async _postUrl(
@@ -232,12 +245,13 @@ class EthAPI {
       keyHash,
       property,
       price,
+      { gasLimit: 8000000 },
     );
   }
 
   public async _getCiphertext(token: BigInt): Promise<Ciphertext> {
     return new Promise(resolve => {
-      this.contract.getCiphertext(token).then(ciphertext => {
+      this.gettersContract.getCiphertext(token).then(ciphertext => {
         resolve({
           iv: ciphertext[0],
           data: [ciphertext[1]],
@@ -246,26 +260,35 @@ class EthAPI {
     });
   }
 
-  public async _buyToken(url: string) {
-    return this.contract.buyToken(url, this.publicKey, { value: 10 });
+  public async _buyToken(contentId: number) {
+    return this.contract.buyToken(contentId, this.publicKey, { value: 10 });
   }
 
-  public async _getTokens(url: string): Promise<bigint[]> {
+  public async _getTokens(contentId: BigInt): Promise<bigint[]> {
     return new Promise((resolve) => {
-      this.contract.getTokens(url).then(tokens => {
-        resolve(tokens.map(token => {
-          return BigInt(token.toString());
-        }));
+      this.gettersContract.getTokens(contentId).then(tokens => {
+        resolve(tokens);
       });
     });
   }
 
-  public async _redeem(proof, publicSignals, tokenId: number) {
+  redeemer = ZK === 'snark' ? this.redeemSnark : this.redeemStark;
+
+  public async _redeem(proof, tokenId: number) {
+    return this.redeemer(proof, tokenId);
+  }
+
+  public async redeemSnark(proof: Snark, tokenId: number) {
     const proofAsCircuitInput = processProof(
-      proof,
-      publicSignals.map(x => modPBigIntNative(x)),
+      proof.proof,
+      // @ts-ignore
+      proof.publicSignals.map(x => modPBigIntNative(x)),
     );
-    return this.contract.redeem(...proofAsCircuitInput, tokenId);
+    return this.contract.redeem_snark(...proofAsCircuitInput, tokenId);
+  }
+
+  public async redeemStark(proof: Stark, tokenId: number) {
+    return this.contract.redeem_stark(proof.programOutputs, tokenId);
   }
 
   public async _checkHash(hash: BigInt, salt: BigInt): Promise<boolean> {
@@ -279,7 +302,7 @@ class EthAPI {
   public async _getOwner(token): Promise<[]> {
     return new Promise((resolve) => {
       this.contract.ownerOf(token).then(owner => {
-        this.contract.getPublicKey(owner).then(publicKey => {
+        this.gettersContract.getPublicKey(owner).then(publicKey => {
           resolve(publicKey.map(_ => BigInt(_.toString())));
         });
       });
@@ -287,16 +310,16 @@ class EthAPI {
   }
 
   public async _getCreator(url: string): Promise<string> {
-    return this.contract.getCreator(url);
+    return this.gettersContract.getCreator(url);
   }
 
   public async _getProperty(url: string): Promise<string> {
-    return this.contract.getProperty(url);
+    return this.gettersContract.getProperty(url);
   }
 
   public async _getPublicKey(address: string): Promise<bigint[]> {
     return new Promise((resolve) => {
-      this.contract.getPublicKey(address).then(publicKey => {
+      this.gettersContract.getPublicKey(address).then(publicKey => {
         resolve(publicKey.map(_ => BigInt(_.toString())));
       });
     });
@@ -308,33 +331,34 @@ class EthAPI {
   }
 
   public async _checkCreator(url): Promise<boolean> {
-    const creatorAddress = await this.contract.getCreator(url);
+    const creatorAddress = await this.gettersContract.getCreator(url);
     return this.address === creatorAddress;
   }
 
-  public async _checkOwnership(url: string): Promise<bigint> {
-    const tokens = await this.contract.getTokens(url);
+  public async _checkOwnership(contentId: BigInt): Promise<BigInt> {
+    const tokens = await this.gettersContract.getTokens(contentId);
     return new Promise((resolve) => {
       let counter = 0;
       tokens.forEach(token => {
-        this.contract.ownerOf(token).then(owner => {
+        this.contract.ownerOf(token.id).then(owner => {
           if (owner === this.address) {
-            resolve(BigInt(token.toString()));
+            resolve(BigInt(token.id.toString()));
           } else if (counter === tokens.length-1) {
-            resolve(BigInt(0));
+            resolve(BigInt(-1));
           } else {
             counter += 1;
           }
         });
       });
       if (tokens.length === 0) {
-        resolve(BigInt(0));
+        resolve(BigInt(-1));
       }
     });
   }
 
   public async _getSalt(): Promise<BigInt> {
-    return this.contract.getHashSalt();
+    //return this.gettersContract.getHashSalt();
+    return new Promise(resolve => resolve(BigInt(0)));
   }
 }
 

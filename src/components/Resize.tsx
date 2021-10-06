@@ -13,8 +13,6 @@ const Resize = (props: ResizeProps) => {
 
   useEffect(() => {
     const getHash = () => {
-      console.log(props.containerRef);
-      console.log(props.display);
       display = props.display ? props.display : '';
       if (props.containerRef && props.contentRef) {
         check();

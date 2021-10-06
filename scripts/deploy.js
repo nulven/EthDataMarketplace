@@ -1,5 +1,5 @@
 require('dotenv').config({ path: __dirname + '/../.env' });
-const { ContractFactory, providers, Wallet } = require('ethers');
+const { ContractFactory, Contract, providers, Wallet } = require('ethers');
 const { execSync } = require('child_process');
 const linker = require('solc/linker');
 const solc = require('solc');
@@ -10,13 +10,17 @@ const contracts = require('@darkforest_eth/contracts');
 const isProd = process.env.NODE_ENV === 'production';
 const projectId = process.env.INFURA_PROJECT_ID;
 const privateKey = process.env.PRIVATE_KEY;
-const network_url = isProd ? `https://ropsten.infura.io/v3/${projectId}` : 'http://localhost:8545';
+const eth_network = process.env.ETH_NETWORK;
+const network_url = isProd ? `https://${eth_network}.infura.io/v3/${projectId}` : 'http://localhost:8545';
 const provider = new providers.JsonRpcProvider(network_url);
 const signer = isProd ?
   new Wallet(privateKey).connect(provider) : provider.getSigner();
 
 const cwd = process.cwd();
 const directory = path.resolve(`${cwd}/public/contracts`);
+
+const folder = process.env.NODE_ENV === 'production' ?
+  'prod' : 'dev';
 
 async function deploy(fileName, constructors=[], libraries = []) {
   try {
@@ -83,10 +87,11 @@ async function deploy(fileName, constructors=[], libraries = []) {
       (file1, file2) =>
         libraries.includes(file2[0]) - libraries.includes(file1[0])
     );
+    const filteredContracts = contracts.filter(contract => libraries.includes(contract[0]) || contract[0] === fileName);
     const librariesAddresses = {};
     const linkReferences = {};
 
-    for (contract of contracts) {
+    for (contract of filteredContracts) {
       const deployedContract = await createContract(contract);
       deployedContracts.push(deployedContract);
     }
@@ -118,9 +123,6 @@ async function deploy(fileName, constructors=[], libraries = []) {
         const contractObject = await factory.deploy(...inputs);
         librariesAddresses[name] = contractObject.address;
 
-        const folder = process.env.NODE_ENV === 'production' ?
-          'prod' : 'dev';
-
         execSync(`mkdir -p ${directory}/${folder}`, { stdio: 'inherit' });
         fs.writeFileSync(`${directory}/${folder}/${name}.json`,
           JSON.stringify({
@@ -132,10 +134,14 @@ async function deploy(fileName, constructors=[], libraries = []) {
         console.log(name, contractObject.address);
         return { name, bytecode, abi, address: contractObject.address };
       } catch (err) {
-        console.log(name, err);
+        console.log(err.message);
       }
 
     }
+
+    const contractJSON = JSON.parse(fs.readFileSync(`${directory}/${folder}/${fileName}.json`).toString());
+
+    return contractJSON;
   } catch (err) {
     console.log(`ERROR: ${err}`);
   }
@@ -145,7 +151,7 @@ const args = process.argv.slice(2);
 
 switch (args[0]) {
   case 'Core':
-    const contractJSON = require('../public/dev/DarkForestCore.json');
+    const contractJSON = require('../public/contracts/dev/DarkForestCore.json');
     let dfCoreContractAddress;
     if (process.env.NODE_ENV === 'production') {
       dfCoreContractAddress = contracts.CORE_CONTRACT_ADDRESS;
@@ -154,9 +160,17 @@ switch (args[0]) {
     }
     deploy(
       'Core',
-      [dfCoreContractAddress],
+      [
+        '1141005542993923374493036937263227815234315019152226250678688752414333038841',
+        '0xAB43bA48c9edF4C2C4bB01237348D1D7B28ef168',
+      ],
       ['EncryptionVerifier', 'Pairing'],
-    );
+    ).then(coreJSON => {
+      deploy('Getters', [], []).then(gettersJSON => {
+        const contract = new Contract(gettersJSON.address, gettersJSON.abi, signer);
+        contract.initialize(coreJSON.address, { gasPrice: 1000000 });
+      });
+    });
     break;
   case 'DarkForestCore':
     deploy('DarkForestCore',

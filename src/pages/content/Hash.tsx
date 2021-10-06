@@ -13,6 +13,9 @@ import {
   proveHash,
   verifyHash,
 } from '../../utils/prover';
+import {
+  stringToNum,
+} from '../../utils/crypto';
 
 import { InputProps } from '../../types/content';
 
@@ -60,12 +63,8 @@ const Hash = (props: HashProps) => {
       slice={sliceFunction}
       display={display}
     >
-      <HashWrapper ref={ref => {
-        setContainerRef(ref);
-      }}>
-        <HashText ref={ref => {
-          setContentRef(ref);
-        }}>{display}</HashText>
+      <HashWrapper ref={setContainerRef}>
+        <HashText ref={setContentRef}>{display}</HashText>
       </HashWrapper>
     </Resize>
   );
@@ -98,26 +97,17 @@ const assertContent = (content) => {
 
 const assertMessage = (message) => assert(typeof message === 'string');
 
-import { mimc7 } from 'circomlib';
-import {
-  stringToNum,
-  pedersenHash,
-} from '../../utils/crypto';
-import eth from '../../utils/ethAPI';
-const computeProperty = async (preimage) => {
+const computeProperty = (preimage): any[] => {
   const numPreimage = stringToNum(preimage);
   const salt = BigInt('0');
-  //const hash = mimc7.multiHash([numPreimage], salt);
-  const hash = await pedersenHash(numPreimage, salt);
-  return [numPreimage, hash, salt];
+  return [numPreimage, salt];
 };
 
 const assertProofInputs = (args: any[]) => {
-  assert(args.length === 4);
+  assert(args.length === 3);
   assert(typeof args[0] === 'bigint');
   assert(typeof args[1] === 'bigint');
   assert(typeof args[2] === 'bigint');
-  assert(typeof args[3] === 'bigint');
 };
 
 const json = {

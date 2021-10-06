@@ -8,26 +8,23 @@ import { Header, Large } from '../components/text';
 import Spinner from '../components/Spinner';
 import { Content, ContentElements } from './Content';
 
-import sol from '../utils/ethAPI';
-import cairo from '../utils/cairoAPI';
-const eth = config.network === 'starknet' ? cairo : sol;
+import eth from '../utils/ethAPI';
 import ipfs from '../utils/ipfs';
-import {
-  getKey,
-} from '../utils/crypto';
-import {
-  proveContract,
-} from '../utils/prover';
+import { getKey } from '../utils/crypto';
+import { Parsers } from '../utils/parsers';
+import { proveEncryption } from '../utils/prover';
 
 import {
   TokenStates,
   Snark,
   EmptySnark,
+  Stark,
+  EmptyStark,
   Ciphertext,
   ContentProperties,
 } from '../types';
 
-
+const ZK = config.zk;
 const TokenWrapper = styled.div`
   margin-top: 10%;
   margin-left: 15%;
@@ -100,12 +97,13 @@ const StateHeaders = {
 
 
 const Token = (props) => {
-  const url = props.match.params.url;
+  const contentId = props.match.params.id;
+  const [content, setContent] = useState(null);
   const [property, setProperty] = useState<ContentProperties>(null);
   const [loading, setLoading] = useState<string>('');
   const [tokenState, setTokenState] = useState<TokenStates>(null);
-  const [tokenIds, setTokenIds] = useState<BigInt[]>([]);
-  const [snark, setSnark] = useState<Snark>(EmptySnark);
+  const [tokens, setToken] = useState([]);
+  const [proof, setProof] = useState({});
   const [key, setKey] = useState<BigInt>(BigInt(0));
   const [ciphertext, setCiphertext] = useState<Ciphertext | number[]>(null);
   const [contentProperty, setContentProperty] =
@@ -115,62 +113,45 @@ const Token = (props) => {
   useEffect(() => {
     setLoading('loading token');
     if (props.signer) {
-      eth.api.getTokens(url).then((_tokens: BigInt[]) => {
-        setTokenIds(_tokens);
-      });
-      eth.api.getProperty(url).then(_property => {
-        if (_property) {
-          setProperty(_property);
-          ipfs.getSnark(url).then((snark: Snark) => {
-            setSnark(snark);
-            setState().then(state => {
-              if (state === TokenStates.SELLER) {
-                const _key = getKey(url);
-                setKey(_key);
-              }
-              if (_property === ContentProperties.HASH) {
-                const _hash = BigInt(snark.publicSignals[3]);
-                setContentProperty(_hash);
-                const _ciphertext = {
-                  iv: BigInt(snark.publicSignals[1]),
-                  data: [BigInt(snark.publicSignals[2])],
-                };
-                setCiphertext(_ciphertext);
-              } else if (_property === ContentProperties.DF) {
-                const _hash = BigInt(snark.publicSignals[4]);
-                setContentProperty(_hash);
-                const _ciphertext = {
-                  iv: BigInt(snark.publicSignals[1]),
-                  data: [
-                    BigInt(snark.publicSignals[2]),
-                    BigInt(snark.publicSignals[3]),
-                  ],
-                };
-                setCiphertext(_ciphertext);
-              } else if (_property === ContentProperties.BLUR) {
-                const _blurredImage =
-                  snark.publicSignals.slice(1, 17).map(Number);
-                setCiphertext(_blurredImage);
-                setContentProperty(_blurredImage);
-              }
-              setLoading('');
+      eth.api.getContent(contentId).then(_content => {
+        setContent(_content);
+        eth.api.getTokens(contentId).then((_tokens: BigInt[]) => {
+          setToken(_tokens);
+        });
+        eth.api.getProperty(contentId).then(_property => {
+          if (_property) {
+            setProperty(_property);
+            ipfs.getProof(_content.url).then(_proof => {
+              setProof(_proof);
+              setState().then(state => {
+                if (state === TokenStates.SELLER) {
+                  const _key = getKey(_content.url);
+                  setKey(_key);
+                }
+                const parser = Parsers[ZK][_property];
+                const { contentProperty, ciphertext } = parser(_proof);
+                setContentProperty(contentProperty);
+                setCiphertext(ciphertext);
+
+                setLoading('');
+              });
             });
-          });
-        } else {
-          setTokenState(TokenStates.NULL);
-          setLoading('');
-        }
+          } else {
+            setTokenState(TokenStates.NULL);
+            setLoading('');
+          }
+        });
       });
     }
   }, [props.signer]);
 
   const setState = async () => {
-    const res = await eth.api.checkCreator(url, eth.address);
-    const res2 = await eth.api.checkOwnership(url, eth.address);
+    const res = await eth.api.checkCreator(contentId, eth.address);
+    const res2 = await eth.api.checkOwnership(contentId, eth.address);
     let state;
     if (res) {
       state = TokenStates.SELLER;
-    } else if (res2 !== BigInt(0)) {
+    } else if (res2 !== BigInt(-1)) {
       state = TokenStates.OWNED;
       setOwnedToken(res2);
     } else {
@@ -188,9 +169,8 @@ const Token = (props) => {
         throw new Error(`${property} verifier not found`);
       }
 
-      const verified = await verifier(snark);
+      const verified = await verifier(proof);
       if (!verified) {
-        console.log('not verified');
         throw new Error('Not a valid token');
       }
 
@@ -198,7 +178,7 @@ const Token = (props) => {
         setLoading('checking hash');
         const hashCheck = await eth.api.checkHash(
           contentProperty,
-          snark.publicSignals[snark.publicSignals.length-1],
+          proof.publicSignals[proof.publicSignals.length-1],
         ).catch(console.log);
         if (!hashCheck) {
           throw new Error('Not a valid token');
@@ -206,7 +186,7 @@ const Token = (props) => {
       }
 
       setLoading('purchasing token');
-      const purchase = await eth.api.buyToken(url);
+      const purchase = await eth.api.buyToken(contentId);
       if (!purchase) {
         throw new Error('Not a valid token');
       }
@@ -225,7 +205,7 @@ const Token = (props) => {
       const _keyCiphertext = await eth.api.getCiphertext(ownedToken);
 
       setLoading('get creator');
-      const address = await eth.api.getCreator(url);
+      const address = await eth.api.getCreator(contentId);
 
       setLoading('get public key');
       const publicKey = await eth.api.getPublicKey(address);
@@ -233,8 +213,9 @@ const Token = (props) => {
         _keyCiphertext,
         publicKey,
         property,
-        snark,
+        proof,
       );
+
       setKey(_key);
       setCiphertext(_ciphertext);
 
@@ -252,23 +233,16 @@ const Token = (props) => {
 
       const privKey = new PrivKey(eth.privateKey);
       const pubKey = new PubKey([publicKey[0], publicKey[1]]);
-      const _key = getKey(url);
+      const _key = getKey(content.url);
 
-      /*
-      const { proof, publicSignals } = await proveContract(
-        privKey,
+      const proof = await proveEncryption(
         _key,
-        pubKey,
-      );
-      */
-      const { fact, jobKey } = await proveContract(
         privKey,
-        _key,
         pubKey,
       );
 
       setLoading('sending proof to contract');
-      await eth.api.redeem(proof, publicSignals, tokenId);
+      await eth.api.redeem(proof, tokenId);
 
       setLoading('');
     } catch (error) {
@@ -308,13 +282,13 @@ const Token = (props) => {
               </Button>
             </>
             : null}
-          {tokenState === TokenStates.SELLER && tokenIds.length > 0 ?
+          {tokenState === TokenStates.SELLER && tokens.length > 0 ?
             <MintedTokensWrapper>
-              {tokenIds.map(tokenId =>
+              {tokens.map(token =>
                 <MintedToken
-                  key={tokenId.toString()}
-                  id={tokenId}
-                  onClick={redeemEth(tokenId)}
+                  key={token.id.toString()}
+                  id={token.id}
+                  onClick={redeemEth(token.id)}
                 />,
               )}
             </MintedTokensWrapper>

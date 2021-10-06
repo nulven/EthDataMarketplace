@@ -5,7 +5,6 @@ import keys from '../../public/keys.json';
 import {
   serializeUrl,
   parseUrl,
-  decryptKeyCiphertextPedersen,
 } from './crypto';
 import { Keypair, PrivKey, PubKey } from 'maci-domainobjs';
 import {
@@ -65,7 +64,8 @@ class CairoConnection {
     const pubKey = new PubKey(publicKey);
     const sharedKey = Keypair.genEcdhSharedKey(privKey, pubKey);
 
-    const _key = await decryptKeyCiphertextPedersen(_keyCiphertext, sharedKey);
+    // const _key = await decryptKeyCiphertextPedersen(_keyCiphertext, sharedKey);
+    const _key = BigInt(0);
 
     const { publicSignals } = snark;
     if (property === ContentProperties.HASH) {
