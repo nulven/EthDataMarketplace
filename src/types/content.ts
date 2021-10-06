@@ -17,7 +17,7 @@ interface ContentSkeleton {
   decrypt: (ciphertext: any, key: BigInt) => any;
   computeProperty: (preimage: any, key?: BigInt) => any[];
   prover: (...args: any[]) => Promise<Snark | Stark>;
-  verifier: (proof: Snark) => Promise<boolean>;
+  verifier: (proof: Snark | Stark) => Promise<boolean>;
   assertProofInputs: (args: any[]) => void;
   assertContent: (content: any) => void;
   assertMessage: (message: any) => void;

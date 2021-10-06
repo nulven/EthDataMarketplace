@@ -47,24 +47,35 @@ async function prove(circuit, inputs): Promise<Snark | Stark> {
 
 async function verifyStark(
   circuit: string,
-  proof: Stark,
+  proof: Snark & Stark,
 ): Promise<boolean> {
   // send to sharp
-  return new Promise(resolve => resolve(true));
+  if ('programOutputs' in proof) {
+    return new Promise(resolve => resolve(true));
+  } else {
+    throw new Error('proof is not a STARK');
+  }
 }
 
-async function verifySnark(circuit: string, proof: Snark): Promise<boolean> {
-  const vKey = await fetch(verificationKeyPath + camelCase(circuit) + '.json')
-    .then(res => {
-      return res.json();
-    });
+async function verifySnark(
+  circuit: string,
+  proof: Snark & Stark,
+): Promise<boolean> {
+  if ('publicSignals' in proof) {
+    const vKey = await fetch(verificationKeyPath + camelCase(circuit) + '.json')
+      .then(res => {
+        return res.json();
+      });
 
-  // @ts-ignore
-  const res = await snarkjs.groth16.verify(vKey, publicSignals, proof);
-  return res;
+    // @ts-ignore
+    const res = await snarkjs.groth16.verify(vKey, publicSignals, proof);
+    return res;
+  } else {
+    throw new Error('proof is not a SNARK');
+  }
 }
 
-async function verify(circuit: string, proof: Snark | Stark): Promise<boolean> {
+async function verify(circuit: string, proof: Snark & Stark): Promise<boolean> {
   const verifier = ZK === 'snark' ? verifySnark : verifyStark;
   return verifier(circuit, proof);
 }

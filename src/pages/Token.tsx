@@ -103,7 +103,7 @@ const Token = (props) => {
   const [loading, setLoading] = useState<string>('');
   const [tokenState, setTokenState] = useState<TokenStates>(null);
   const [tokens, setToken] = useState([]);
-  const [proof, setProof] = useState({});
+  const [proof, setProof] = useState<Snark | Stark>(null);
   const [key, setKey] = useState<BigInt>(BigInt(0));
   const [ciphertext, setCiphertext] = useState<Ciphertext | number[]>(null);
   const [contentProperty, setContentProperty] =
@@ -175,13 +175,15 @@ const Token = (props) => {
       }
 
       if (config.enableDarkForestCheck && property === ContentProperties.DF) {
-        setLoading('checking hash');
-        const hashCheck = await eth.api.checkHash(
-          contentProperty,
-          proof.publicSignals[proof.publicSignals.length-1],
-        ).catch(console.log);
-        if (!hashCheck) {
-          throw new Error('Not a valid token');
+        if ('publicSignals' in proof) {
+          setLoading('checking hash');
+          const hashCheck = await eth.api.checkHash(
+            contentProperty,
+            proof.publicSignals[proof.publicSignals.length-1],
+          ).catch(console.log);
+          if (!hashCheck) {
+            throw new Error('Not a valid token');
+          }
         }
       }
 
