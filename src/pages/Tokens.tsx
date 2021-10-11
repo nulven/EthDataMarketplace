@@ -7,7 +7,6 @@ import { Header } from '../components/text';
 import PropertyToggle from '../app/PropertyToggle';
 import { ContentElements } from './Content';
 
-import config from '../../config';
 import eth from '../utils/ethAPI';
 import ipfs from '../utils/ipfs';
 import { Parsers } from '../utils/parsers';
@@ -15,9 +14,8 @@ import {
   ContentProperties,
   Snark,
   Stark,
+  ZKTypes,
 } from '../types';
-
-const ZK = config.zk;
 
 const TokensWrapper = styled.div`
   display: flex;
@@ -59,6 +57,7 @@ const PostsWrapper = styled.div`
 
 type TokenProps = {
   url: string;
+  zk: ZKTypes;
   property: ContentProperties;
   onClick: () => void;
 };
@@ -68,8 +67,9 @@ const Token = (props: TokenProps) => {
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    ipfs.getProof(props.url).then((proof: Snark | Stark) => {
-      const { contentProperty } = Parsers[ZK][props.property](proof);
+    ipfs.getProof(props.url, props.zk).then(proof => {
+      // @ts-ignore
+      const { contentProperty } = Parsers[props.zk][props.property](proof);
       setProperty(contentProperty);
       setLoading(false);
     });
@@ -120,6 +120,7 @@ const Tokens = (props) => {
         {tokens.filter(_ => _.property === property).map(_ => <Token
           key={_.url}
           url={_.url}
+          zk={_.zk}
           property={_.property}
           onClick={sendToToken(_.id.toString())}
         />)}

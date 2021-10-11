@@ -7,16 +7,15 @@ import { Large } from '../../components/text';
 import Resize from '../../components/Resize';
 
 import {
-  decryptDarkForestCiphertext,
+  ZKFunctions,
 } from '../../utils/crypto';
-import {
-  proveDarkForest,
-  verifyDarkForest,
-} from '../../utils/prover';
 
 import {
   InputProps,
 } from '../../types/content';
+import {
+  ZKTypes,
+} from '../../types';
 
 
 const HashWrapper = styled.div`
@@ -191,10 +190,17 @@ const json = {
   input: DarkForestInput,
   display: DarkForest,
   list: DarkForest,
-  decrypt: decryptDarkForestCiphertext,
+  decrypt: (zk, ...args) =>
+    ZKFunctions[zk].decryptDarkForestCiphertext(...args),
   computeProperty,
-  prover: proveDarkForest,
-  verifier: verifyDarkForest,
+  prover: {
+    [ZKTypes.SNARK]: ZKFunctions[ZKTypes.SNARK].provers.darkForest,
+    [ZKTypes.STARK]: ZKFunctions[ZKTypes.STARK].provers.darkForest,
+  },
+  verifier: {
+    [ZKTypes.SNARK]: ZKFunctions[ZKTypes.SNARK].verifiers.darkForest,
+    [ZKTypes.STARK]: ZKFunctions[ZKTypes.STARK].verifiers.darkForest,
+  },
   assertProofInputs,
   assertContent,
   assertMessage,

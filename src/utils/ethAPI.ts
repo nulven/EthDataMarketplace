@@ -3,7 +3,6 @@ dotenv.config({ path: '/home/nulven/CairoDataMarketplace/.env' });
 import { Contract, providers } from 'ethers';
 import { Parsers } from './parsers';
 import { modPBigIntNative } from './crypto';
-import config from '../../config';
 
 import contractJSON from '../../public/contracts/Core.json';
 import gettersContractJSON from '../../public/contracts/Getters.json';
@@ -12,17 +11,14 @@ import { OurErrors, SolidityErrors } from './errors';
 
 import { PrivKey, PubKey } from 'maci-domainobjs';
 import {
-  decryptKeyCiphertext,
-  sharedKey,
-  genPrivKey,
+  ZKFunctions,
 } from '../utils/crypto';
 import {
   Ciphertext,
   Snark,
   Stark,
+  ZKTypes,
 } from '../types';
-
-const ZK = config.zk;
 
 class EthConnection {
   provider: providers.Web3Provider | providers.JsonRpcProvider;
@@ -34,8 +30,8 @@ class EthConnection {
   api: any;
   dfApi: any;
   address: string;
-  privateKey: BigInt;
-  publicKey: BigInt[];
+  privateKey: Record<ZKTypes, BigInt>;
+  publicKey: Record<ZKTypes, BigInt[]>;
   signerHook: any;
   salt: BigInt;
 
@@ -101,23 +97,27 @@ class EthConnection {
   public async loadKeys() {
     let _privateKey;
     let _publicKey;
-    const privateKeyMaybe = localStorage.getItem(
-      `${this.address}_private_key_stark`);
-    const publicKeyMaybe = localStorage.getItem(
-      `${this.address}_public_key_stark`);
-    if (privateKeyMaybe && publicKeyMaybe) {
-      _privateKey = privateKeyMaybe;
-      _publicKey = publicKeyMaybe.split(',');
-    } else {
-      const keys = await genPrivKey();
-      _privateKey = keys.privKey;
-      _publicKey = keys.pubKey;
-      localStorage.setItem(`${this.address}_private_key_stark`, _privateKey);
-      localStorage.setItem(`${this.address}_public_key_stark`, _publicKey);
-    }
+    this.privateKey = <Record<ZKTypes, BigInt>>{};
+    this.publicKey = <Record<ZKTypes, BigInt[]>>{};
+    Object.values(ZKTypes).forEach(async (zk) => {
+      const privateKeyMaybe = localStorage.getItem(
+        `${this.address}_private_key_${zk}`);
+      const publicKeyMaybe = localStorage.getItem(
+        `${this.address}_public_key_${zk}`);
+      if (privateKeyMaybe && publicKeyMaybe) {
+        _privateKey = privateKeyMaybe;
+        _publicKey = publicKeyMaybe.split(',');
+      } else {
+        const keys = await ZKFunctions[zk].genPrivKey();
+        _privateKey = keys.privKey;
+        _publicKey = keys.pubKey;
+        localStorage.setItem(`${this.address}_private_key_${zk}`, _privateKey);
+        localStorage.setItem(`${this.address}_public_key_${zk}`, _publicKey);
+      }
 
-    this.privateKey = BigInt(_privateKey);
-    this.publicKey = _publicKey.map(BigInt);
+      this.privateKey[zk] = BigInt(_privateKey);
+      this.publicKey[zk] = _publicKey.map(BigInt);
+    });
   }
 
   public connect() {
@@ -138,14 +138,18 @@ class EthConnection {
     publicKey: BigInt[],
     property: string,
     proof: Snark | Stark,
+    zk: ZKTypes,
   ): Promise<[any, BigInt]> {
-    const privKey = new PrivKey(this.privateKey);
+    const privKey = new PrivKey(this.privateKey[zk]);
     const pubKey = new PubKey(publicKey);
-    const _sharedKey = await sharedKey(privKey, pubKey);
+    const _sharedKey = await ZKFunctions[zk].sharedKey(privKey, pubKey);
 
-    const _key = await decryptKeyCiphertext(_keyCiphertext, _sharedKey);
+    const _key = await ZKFunctions[zk].decryptKeyCiphertext(
+      _keyCiphertext,
+      _sharedKey,
+    );
 
-    const _ciphertext = Parsers[ZK][property](proof).ciphertext;
+    const _ciphertext = Parsers[zk][property](proof).ciphertext;
     return [_ciphertext, _key];
   }
 }
@@ -238,13 +242,15 @@ class EthAPI {
     keyHash: bigint,
     property: string,
     price: bigint,
+    zk: ZKTypes,
   ) {
     await this.contract.postUrl(
       url,
-      this.publicKey,
+      this.publicKey[zk],
       keyHash,
       property,
       price,
+      zk,
       { gasLimit: 8000000 },
     );
   }
@@ -260,8 +266,8 @@ class EthAPI {
     });
   }
 
-  public async _buyToken(contentId: number) {
-    return this.contract.buyToken(contentId, this.publicKey, { value: 10 });
+  public async _buyToken(contentId: number, zk: ZKTypes) {
+    return this.contract.buyToken(contentId, this.publicKey[zk], { value: 10 });
   }
 
   public async _getTokens(contentId: BigInt): Promise<bigint[]> {
@@ -272,9 +278,10 @@ class EthAPI {
     });
   }
 
-  redeemer = ZK === 'snark' ? this.redeemSnark : this.redeemStark;
 
-  public async _redeem(proof, tokenId: number) {
+  redeemer;
+  public async _redeem(proof, tokenId: number, zk: ZKTypes) {
+    this.redeemer = zk === ZKTypes.SNARK ? this.redeemSnark : this.redeemStark;
     return this.redeemer(proof, tokenId);
   }
 
@@ -299,10 +306,10 @@ class EthAPI {
     });
   }
 
-  public async _getOwner(token): Promise<[]> {
+  public async _getOwner(token, zk: ZKTypes): Promise<[]> {
     return new Promise((resolve) => {
       this.contract.ownerOf(token).then(owner => {
-        this.gettersContract.getPublicKey(owner).then(publicKey => {
+        this.gettersContract.getPublicKey(owner, zk).then(publicKey => {
           resolve(publicKey.map(_ => BigInt(_.toString())));
         });
       });
@@ -317,9 +324,9 @@ class EthAPI {
     return this.gettersContract.getProperty(url);
   }
 
-  public async _getPublicKey(address: string): Promise<bigint[]> {
+  public async _getPublicKey(address: string, zk: ZKTypes): Promise<bigint[]> {
     return new Promise((resolve) => {
-      this.gettersContract.getPublicKey(address).then(publicKey => {
+      this.gettersContract.getPublicKey(address, zk).then(publicKey => {
         resolve(publicKey.map(_ => BigInt(_.toString())));
       });
     });

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { HashRouter, Switch } from 'react-router-dom';
 import Web3Modal from 'web3modal';
-import WalletLink from 'walletlink';
 import WalletConnectProvider from '@walletconnect/web3-provider';
 import { providers } from 'ethers';
 
@@ -16,49 +15,14 @@ import ChooseUser from '../pages/ChooseUser';
 
 import eth from '../utils/ethAPI';
 
-const INFURA_ID = '';
-const chain = 'goerli';
-/*
-const walletLink = new WalletLink({
-  appName: 'coinbase',
-});
-const walletLinkProvider = walletLink.makeWeb3Provider(
-  `https://${chain}.infura.io/v3/${INFURA_ID}`,
-  1,
-);
-*/
+const INFURA_ID = config.infuraId;
+const chain = config.chain;
+
 const web3Modal = new Web3Modal({
   network: chain,
   cacheProvider: true, // optional
   theme: 'light', // optional. Change to "dark" for a dark theme.
   providerOptions: {
-    walletconnect: {
-      package: WalletConnectProvider, // required
-      options: {
-        bridge: 'https://polygon.bridge.walletconnect.org',
-        infuraId: INFURA_ID,
-        rpc: {
-          1:'https://${chain}.infura.io/v3/${INFURA_ID}', // mainnet // For more WalletConnect providers: https://docs.walletconnect.org/quick-start/dapps/web3-provider#required
-        },
-      },
-    },
-    /*torus: {
-      package: Torus,
-    },*/
-    /*
-    'custom-walletlink': {
-      display: {
-        logo: 'https://play-lh.googleusercontent.com/PjoJoG27miSglVBXoXrxBSLveV6e3EeBPpNY55aiUUBM9Q1RCETKCOqdOkX2ZydqVf0',
-        name: 'Coinbase',
-        description: 'Connect to Coinbase Wallet (not Coinbase App)',
-      },
-      package: walletLinkProvider,
-      connector: async (provider) => {
-        await provider.enable();
-        return provider;
-      },
-    },
-    */
   },
 });
 
@@ -117,30 +81,35 @@ const App = () => {
           navbar={true}
           Subpage={NewToken}
           signer={signer}
+          web3={web3Modal}
         />
         <Page
           path="/tokens/:id"
           navbar={true}
           Subpage={Token}
           signer={signer}
+          web3={web3Modal}
         />
         <Page
           path="/tokens"
           navbar={true}
           Subpage={Tokens}
           signer={signer}
+          web3={web3Modal}
         />
         <Page
           path="/choose-user"
           navbar={true}
           Subpage={ChooseUser}
           signer={signer}
+          web3={web3Modal}
         />
         <Page
           path="/"
           navbar={true}
           Subpage={Tokens}
           signer={signer}
+          web3={web3Modal}
         />
       </Switch>
     </HashRouter>

@@ -8,7 +8,7 @@ const path = require('path');
 const contracts = require('@darkforest_eth/contracts');
 
 const isProd = process.env.NODE_ENV === 'production';
-const projectId = process.env.INFURA_PROJECT_ID;
+const projectId = process.env.INFURA_ID;
 const privateKey = process.env.PRIVATE_KEY;
 const eth_network = process.env.ETH_NETWORK;
 const network_url = isProd ? `https://${eth_network}.infura.io/v3/${projectId}` : 'http://localhost:8545';
@@ -117,7 +117,7 @@ async function deploy(fileName, constructors=[], libraries = []) {
       try {
         const factory = await new ContractFactory(abi, bytecode, signer);
         let inputs = [];
-        if (name === 'Core') {
+        if (name === 'Core' || name === 'Getters') {
           inputs = [...constructors];
         }
         const contractObject = await factory.deploy(...inputs);
@@ -166,10 +166,7 @@ switch (args[0]) {
       ],
       ['EncryptionVerifier', 'Pairing'],
     ).then(coreJSON => {
-      deploy('Getters', [], []).then(gettersJSON => {
-        const contract = new Contract(gettersJSON.address, gettersJSON.abi, signer);
-        contract.initialize(coreJSON.address, { gasPrice: 1000000 });
-      });
+      deploy('Getters', [coreJSON.address], []);
     });
     break;
   case 'DarkForestCore':

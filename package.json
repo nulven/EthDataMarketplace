@@ -56,7 +56,7 @@
     "chartist": "0.10.1",
     "chartist-plugin-legend": "^0.6.2",
     "circom": "^0.5.35",
-    "circomlib": "^0.5.2",
+    "circomlib": "^0.5.5",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^6.2.1",
     "customerio-node": "^1.0.1",

@@ -8,33 +8,7 @@ import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 
 
 interface ICore {
-  function postUrl(
-    string calldata url,
-    uint256[2] memory publicKey,
-    uint256 keyHash,
-    string calldata property,
-    uint256 price
-  ) external returns (bool);
-
-  function buyToken(
-    uint256 contentId,
-    uint256[2] memory publicKey
-  ) payable external returns (bool);
-
-  function redeem_snark(
-    uint256[2] memory a,
-    uint256[2][2] memory b,
-    uint256[2] memory c,
-    uint256[5] memory input,
-    uint256 tokenId
-  ) external returns (bool);
-
-  function redeem_stark(
-    uint256[5] memory input,
-    uint256 tokenId
-  ) external returns (bool);
-
-  function getPublicKey(address _address) view external returns (uint256[2] memory publicKey);
+  function getPublicKey(address _address, string calldata zk) view external returns (uint256[2] memory publicKey);
 
   function getContent(uint256 contentId) view external returns (ContractStorage.Content memory);
 
@@ -46,8 +20,6 @@ interface ICore {
 
   function getNumOfProperties() view external returns (uint256 length);
 
-  function incrementProperty() external returns (bool);
-
   function getProperty(uint256 id) view external returns (string memory);
 }
 
@@ -55,14 +27,15 @@ contract Getters {
 
   ICore coreContract;
 
-  function initialize(
+  constructor(
     address _coreContractAddress
   ) public {
     coreContract = ICore(_coreContractAddress);
   }
 
-  function getPublicKey(address _address) public view returns (uint256[2] memory publicKey) {
-    return coreContract.getPublicKey(_address);
+
+  function getPublicKey(address _address, string calldata zk) public view returns (uint256[2] memory publicKey) {
+    return coreContract.getPublicKey(_address, zk);
   }
 
   function getContents() public view returns (ContractStorage.Content[] memory) {

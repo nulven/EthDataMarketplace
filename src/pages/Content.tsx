@@ -50,6 +50,7 @@ const ContentWrapper = styled.div`
 
 type ContentProps = {
   property: string;
+  zk: string;
   content: {
     cipher: number[] | Ciphertext,
     property: number[] | BigInt,
@@ -71,6 +72,7 @@ const Content = (props: ContentProps) => {
     assertContent(props.content);
     if (props.secretKey) {
       decrypt(
+        props.zk,
         props.content.cipher,
         props.secretKey,
       ).then(_message => {

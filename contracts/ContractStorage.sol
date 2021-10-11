@@ -12,6 +12,7 @@ contract ContractStorage {
     uint256 keyHash;
     address creator;
     uint256 price;
+    string zk;
   }
 
   struct Token {
@@ -39,10 +40,10 @@ contract ContractStorage {
   mapping(uint256 => string) public _idProperties;
 
   // USERS
-  mapping(address => uint256[2]) public publicKeys;
+  mapping(address => mapping(string => uint256[2])) public publicKeys;
 
-  function getPublicKey(address _address) public view returns (uint256[2] memory publicKey) {
-    return publicKeys[_address];
+  function getPublicKey(address _address, string calldata zk) public view returns (uint256[2] memory publicKey) {
+    return publicKeys[_address][zk];
   }
 
   function getContent(uint256 contentId) public view returns (Content memory) {

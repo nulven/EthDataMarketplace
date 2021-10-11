@@ -44,15 +44,19 @@ contract Core is ERC721URIStorage, ContractStorage {
     uint256[2] memory publicKey,
     uint256 keyHash,
     string calldata property,
-    uint256 price
+    uint256 price,
+    string calldata zk
   ) public returns (bool) {
+    /*
     uint urlExists = 0;
     for (uint i = 0; i < contents.length; i++) {
       if (keccak256(bytes(contents[i].url)) == keccak256(bytes(url))) {
         urlExists = 1;
       }
     }
-    require(urlExists == 0, 'Url already posted');
+    // require(urlExists == 0, 'Url already posted');
+    require(urlExists == 0, '');
+    */
 
     address _seller = msg.sender;
     Content memory content;
@@ -63,10 +67,11 @@ contract Core is ERC721URIStorage, ContractStorage {
     content.price = price;
     content.keyHash = keyHash;
     content.property = property;
+    content.zk = zk;
     // _setProperty(content.id, property);
     contents.push(content);
 
-    addPublicKey(_seller, publicKey);
+    addPublicKey(_seller, publicKey, zk);
 
     return true;
   }
@@ -76,9 +81,9 @@ contract Core is ERC721URIStorage, ContractStorage {
     uint256[2] memory publicKey
   ) public payable returns (bool) {
     Content memory content = contents[contentId];
-    require(msg.value >= content.price, 'Not enough money');
+    // require(msg.value >= content.price, 'Not enough money');
     address _buyer = _msgSender();
-    addPublicKey(_buyer, publicKey);
+    addPublicKey(_buyer, publicKey, content.zk);
     _mintToken(_buyer, contentId);
     return true;
   }
@@ -90,8 +95,8 @@ contract Core is ERC721URIStorage, ContractStorage {
     Content memory content = contents[token.contentId];
     // require(content.creator == msg.sender, 'You are not the seller');
     // require(token.redeemed == false, 'ETH already redeemed');
-    require(content.creator == msg.sender, '');
-    require(token.redeemed == false, '');
+    // require(content.creator == msg.sender, '');
+    // require(token.redeemed == false, '');
 
     return true;
   }
@@ -99,14 +104,17 @@ contract Core is ERC721URIStorage, ContractStorage {
   function assert_proof_inputs(
     uint256[5] memory input,
     address buyer,
-    uint256 contentId 
+    uint256 contentId,
+    string memory zk
   ) internal returns (bool) {
-    uint256[2] memory publicKey = publicKeys[buyer];
+    uint256[2] memory publicKey = publicKeys[buyer][zk];
     Content memory content = contents[contentId];
 
     // require(input[0] == content.keyHash, 'Incorrect hash');
-    require(input[3] == publicKey[0], 'Used wrong public key');
-    require(input[4] == publicKey[1], 'Used wrong public key');
+    //require(input[3] == publicKey[0], 'Used wrong public key');
+    // require(input[4] == publicKey[1], 'Used wrong public key');
+    // require(input[3] == publicKey[0], '');
+    // require(input[4] == publicKey[1], '');
   }
 
   function execute_redeem(
@@ -146,11 +154,13 @@ contract Core is ERC721URIStorage, ContractStorage {
     Token memory token = tokens[tokenId];
     address _buyer = ownerOf(tokenId);
 
-    assert_proof_inputs(input, _buyer, token.contentId);
+    /*
+    assert_proof_inputs(input, _buyer, token.contentId, 'snark');
     require(
       EncryptionVerifier.verifyProof(a, b, c, input),
       'Proof invalid!'
     );
+    */
 
     execute_redeem(tokenId, token.contentId, input);
 
@@ -165,7 +175,7 @@ contract Core is ERC721URIStorage, ContractStorage {
     // checkRedeem(tokenId);
     Token memory token = tokens[tokenId];
     address _buyer = ownerOf(tokenId);
-    assert_proof_inputs(input, _buyer, token.contentId);
+    assert_proof_inputs(input, _buyer, token.contentId, 'stark');
     bytes32 outputHash = keccak256(abi.encodePacked(input));
     bytes32 fact = keccak256(abi.encodePacked(cairoProgramHash_, outputHash));
     // require(cairoVerifier_.isValid(fact), 'MISSING_CAIRO_PROOF');
@@ -175,6 +185,7 @@ contract Core is ERC721URIStorage, ContractStorage {
     return true;
   }
 
+  /*
   function _setProperty(uint256 contentId, string calldata property) internal returns (bool) {
     uint256 propertyId = properties[property];
     require(propertyId != 0, 'Property does not exist');
@@ -183,6 +194,7 @@ contract Core is ERC721URIStorage, ContractStorage {
     contents[contentId] = content;
     return true;
   }
+  */
 
   function _mintToken(
     address to,
@@ -200,9 +212,9 @@ contract Core is ERC721URIStorage, ContractStorage {
     _setTokenURI(id, content.url);
   }
 
-  function addPublicKey(address _address, uint256[2] memory publicKey) internal returns (bool) {
-    if (publicKeys[_address][0] == 0) {
-      publicKeys[_address] = publicKey;
+  function addPublicKey(address _address, uint256[2] memory publicKey, string memory zk) internal returns (bool) {
+    if (publicKeys[_address][zk][0] == 0) {
+      publicKeys[_address][zk] = publicKey;
     }
 
     return true;

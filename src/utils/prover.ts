@@ -1,12 +1,11 @@
 import { post } from './api';
-import { Snark, Stark } from '../types';
+import { Snark, Stark, ZKTypes } from '../types';
 import config from '../../config';
 const STARKWARE_APP = config.starkwareApp;
 
 const wasmPath = '/circuits/wasm/';
 const keyPath = '/circuits/keys/';
-const verificationKeyPath = '/circuits/verification_keys';
-const ZK = config.zk;
+const verificationKeyPath = '/circuits/verification_keys/';
 
 function camelCase(str) {
   return str.split('-').map(_ => {
@@ -40,8 +39,8 @@ async function proveStark(circuit, inputs): Promise<Stark> {
   });
 }
 
-async function prove(circuit, inputs): Promise<Snark | Stark> {
-  const prover = ZK === 'snark' ? proveSnark : proveStark;
+async function prove(circuit, inputs, zk: ZKTypes): Promise<Snark | Stark> {
+  const prover = zk === 'snark' ? proveSnark : proveStark;
   return prover(circuit, inputs);
 }
 
@@ -68,59 +67,66 @@ async function verifySnark(
       });
 
     // @ts-ignore
-    const res = await snarkjs.groth16.verify(vKey, publicSignals, proof);
+    const res = await snarkjs.groth16.verify(
+      vKey,
+      proof.publicSignals,
+      proof.proof,
+    );
     return res;
   } else {
     throw new Error('proof is not a SNARK');
   }
 }
 
-async function verify(circuit: string, proof: Snark & Stark): Promise<boolean> {
-  const verifier = ZK === 'snark' ? verifySnark : verifyStark;
+async function verify(
+  circuit: string,
+  proof: Snark & Stark,
+  zk: ZKTypes,
+): Promise<boolean> {
+  const verifier = zk === 'snark' ? verifySnark : verifyStark;
   return verifier(circuit, proof);
 }
 
 // PROVERS
 export async function proveEncryption(
-  preimage,
-  privateKey,
-  publicKey,
+  zk: ZKTypes,
+  args,
 ) {
   return prove('encryption', {
-    key: preimage.toString(),
-    seller_private_key: privateKey.rawPrivKey.toString(),
-    buyer_public_key: publicKey.asCircuitInputs(),
-  });
+    key: args[0].toString(),
+    seller_private_key: args[1].asCircuitInputs(),
+    buyer_public_key: args[2].asCircuitInputs(),
+  }, zk);
 }
 
-export async function proveHash(args) {
+export async function proveHash(zk: ZKTypes, args) {
   return prove('hash', {
     preimage: args[1].toString(),
     key: args[0].toString(),
     salt: args[2].toString(),
-  });
+  }, zk);
 }
 
-export async function proveBlur(args) {
+export async function proveBlur(zk: ZKTypes, args) {
   return prove('blur-image', {
     preimage: args[1].map(_ => _.toString()),
     key: args[0].toString(),
     blurred_image: args[2].map(_ => _.toString()),
-  });
+  }, zk);
 }
 
-export async function proveDarkForest(args) {
+export async function proveDarkForest(zk: ZKTypes, args) {
   return prove('dark-forest', {
     x: args[1].toString(),
     y: args[2].toString(),
     key: args[0].toString(),
     hash: args[3].toString(),
     salt: args[4],
-  });
+  }, zk);
 }
 
 // VERIFIERS
-export const verifyEncryption = async (proof) => verify('encryption', proof);
-export const verifyHash = async (proof) => verify('hash', proof);
-export const verifyBlur = async (proof) => verify('blur', proof);
-export const verifyDarkForest = async (proof) => verify('dark-forest', proof);
+export const verifyEncryption = async (zk: ZKTypes, proof) => verify('encryption', proof, zk);
+export const verifyHash = async (zk: ZKTypes, proof) => verify('hash', proof, zk);
+export const verifyBlur = async (zk: ZKTypes, proof) => verify('blur', proof, zk);
+export const verifyDarkForest = async (zk: ZKTypes, proof) => verify('dark-forest', proof, zk);

@@ -6,6 +6,7 @@ import TextInput from '../components/TextInput';
 import Toggle from '../components/Toggle';
 import { Header } from '../components/text';
 import ipfs from '../utils/ipfs';
+import config from '../../config';
 
 
 type IconProps = {
@@ -47,6 +48,7 @@ const ModalHeader = styled(Header)`
 `;
 
 enum Providers {
+  HOST = 'host',
   INFURA = 'infura',
   LOCAL = 'local',
 }
@@ -61,17 +63,26 @@ export default function Ipfs() {
   const [infuraProjectSecret, setInfuraProjectSecret] =
     useState<string>(ipfs.infuraProjectSecret);
   const [connected, setConnected] = useState<boolean>(false);
+  const [didMount, setDidMount] = useState<boolean>(false);
 
   useEffect(() => {
-    if (ipfs.host === 'localhost') {
-      setProvider(Providers.LOCAL);
-    } else {
-      setProvider(Providers.INFURA);
+    switch (ipfs.host) {
+      case 'host':
+        setProvider(Providers.HOST);
+        break;
+      case 'infura':
+        setProvider(Providers.INFURA);
+        break;
+      case 'localhost':
+        setProvider(Providers.LOCAL);
+        break;
     }
   }, []);
 
   useEffect(() => {
     ipfs.checkConnection().then(setConnected);
+    setDidMount(true);
+    return () => setDidMount(false);
   }, [provider]);
 
   const onShow = () => {
@@ -89,18 +100,25 @@ export default function Ipfs() {
 
   const onSetProvider = (_provider: Providers) => {
     setProvider(_provider);
-    if (_provider === Providers.LOCAL) {
-      setHost('localhost');
-      setProtocol('http');
-    } else {
-      setHost('ipfs.infura.io');
-      setProtocol('https');
+    switch(_provider) {
+      case Providers.LOCAL:
+        setHost('localhost');
+        setProtocol('http');
+        break;
+      case Providers.INFURA:
+        setHost('ipfs.infura.io');
+        setProtocol('https');
+        break;
+      case Providers.HOST:
+        setHost(config.ipfsHost);
+        setProtocol('http');
+        break;
     }
   };
 
   return (
     <>
-      <IpfsIcon onClick={onShow}>
+      <IpfsIcon>
         <ConnectedIcon connected={connected} />
         <IpfsLabel>
           IPFS
@@ -113,35 +131,40 @@ export default function Ipfs() {
           elements={Providers}
           setElement={onSetProvider}
         />
-        <TextInput
-          placeholder={'HOST'}
-          handleEnter={onEnter}
-          onChange={setHost}
-          value={host}
-        />
-        <TextInput
-          placeholder={'PROTOCOL'}
-          handleEnter={onEnter}
-          onChange={setProtocol}
-          value={protocol}
-        />
-        <br />
-        {provider === Providers.INFURA ?
+        {provider === Providers.HOST ?
+          null :
           <>
             <TextInput
-              placeholder={'INFURA PROJECT ID'}
+              placeholder={'HOST'}
               handleEnter={onEnter}
-              onChange={setInfuraProjectId}
-              value={infuraProjectId}
+              onChange={setHost}
+              value={host}
             />
             <TextInput
-              placeholder={'INFURA PROJECT SECRET'}
+              placeholder={'PROTOCOL'}
               handleEnter={onEnter}
-              onChange={setInfuraProjectSecret}
-              value={infuraProjectSecret}
+              onChange={setProtocol}
+              value={protocol}
             />
+            <br />
+            {provider === Providers.INFURA ?
+              <>
+                <TextInput
+                  placeholder={'INFURA PROJECT ID'}
+                  handleEnter={onEnter}
+                  onChange={setInfuraProjectId}
+                  value={infuraProjectId}
+                />
+                <TextInput
+                  placeholder={'INFURA PROJECT SECRET'}
+                  handleEnter={onEnter}
+                  onChange={setInfuraProjectSecret}
+                  value={infuraProjectSecret}
+                />
+              </>
+              : null}
           </>
-          : null}
+        }
       </Modal>
     </>
   );

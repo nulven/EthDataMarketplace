@@ -10,11 +10,20 @@ import bigInt from 'big-integer';
 import { BigInteger } from 'big-integer';
 
 import { get, post } from './api';
-import { Ciphertext } from '../types';
+import { Snark, Stark, Ciphertext, ZKTypes } from '../types';
+import {
+  proveEncryption,
+  proveHash,
+  proveBlur,
+  proveDarkForest,
+  verifyEncryption,
+  verifyHash,
+  verifyBlur,
+  verifyDarkForest,
+} from './prover';
 
 import config from '../../config';
 const STARKWARE_APP = config.starkwareApp;
-const ZK = config.zk;
 
 
 function serializeUrl(url: string) {
@@ -32,10 +41,8 @@ function parseUrl(parts: BigInt[]): string {
 }
 
 
-export const p = bigInt(
-  '21888242871839275222246405745257275088548364400416034343698204186575808495' +
-  '617',
-);
+export const p = bigInt('21888242871839275222246405745257275088548364400416034343698204186575808495617');
+
 const FIELD_PRIME = BigInt('3618502788666131213697322783095070105623107215331596699973092056135872020481');
 const modPBigIntNative = (x: BigInteger) => {
   let ret = bigInt(x).mod(p);
@@ -47,7 +54,10 @@ const modPBigIntNative = (x: BigInteger) => {
 
 async function pedersenHash(x: BigInt, y: BigInt): Promise<BigInt> {
   return new Promise(resolve => {
-    post(`${STARKWARE_APP}/hash`, { x: x.toString(), y: y.toString() }).then(res => {
+    post(`${STARKWARE_APP}/hash`, {
+      x: x.toString(),
+      y: y.toString(),
+    }).then(res => {
       resolve(BigInt(res.res));
     });
   });
@@ -59,10 +69,99 @@ async function mimcHash(x: BigInt, y: BigInt): Promise<BigInt> {
   });
 }
 
-async function hash(x: BigInt, y: BigInt): Promise<BigInt> {
-  const hasher = ZK === 'snark' ? mimcHash : pedersenHash;
-  return hasher(x, y);
+interface ZKFunctionsSkeleton {
+  provers: Record<string, (any) =>
+    Promise<Snark | Stark>>;
+  verifiers: Record<string, (proof: any) => Promise<boolean>>;
+  hash: (x: BigInt, y: BigInt) => Promise<BigInt>;
+  sharedKey: (privKey: PrivKey, pubKey: PubKey) => Promise<BigInt>;
+  genSharedKey: () => Promise<BigInt>;
+  genPrivKey: () => Promise<{ privKey: BigInt; pubKey: BigInt[] }>;
+  decrypt: (ciphertext: Ciphertext, sharedKey: BigInt) => Promise<BigInt[]>;
+  decryptKeyCiphertext:
+    (ciphertext: Ciphertext, sharedKey: BigInt) => Promise<BigInt>;
+  decryptDarkForestCiphertext:
+    (ciphertext: Ciphertext, sharedKey: BigInt) => Promise<BigInt[]>;
+  decryptMessageCiphertext:
+    (ciphertext: Ciphertext, sharedKey: BigInt) => Promise<string>;
 }
+
+const ZKFunctions: Record<ZKTypes, ZKFunctionsSkeleton> = {
+  [ZKTypes.SNARK]: {
+    'provers': {
+      'encryption': (args) => proveEncryption(
+        ZKTypes.SNARK,
+        args,
+      ),
+      'hash': (args) => proveHash(ZKTypes.SNARK, args),
+      'blur': (args) => proveBlur(ZKTypes.SNARK, args),
+      'darkForest': (args) => proveDarkForest(ZKTypes.SNARK, args),
+    },
+    'verifiers': {
+      'encryption': (proof) => verifyEncryption(ZKTypes.SNARK, proof),
+      'hash': (proof) => verifyHash(ZKTypes.SNARK, proof),
+      'blur': (proof) => verifyBlur(ZKTypes.SNARK, proof),
+      'darkForest': (proof) => verifyDarkForest(ZKTypes.SNARK, proof),
+    },
+    'hash': mimcHash,
+    'sharedKey': sharedKeySnark,
+    'genSharedKey': genSharedKeySnark,
+    'genPrivKey': genPrivKeySnarkAsync,
+    'decrypt': decryptMimcAsync,
+    'decryptKeyCiphertext':
+      (
+        ciphertext: Ciphertext,
+        sharedKey: BigInt,
+      ) => decryptKeyCiphertext(ciphertext, sharedKey, ZKTypes.SNARK),
+    'decryptDarkForestCiphertext':
+      (
+        ciphertext: Ciphertext,
+        sharedKey: BigInt,
+      ) => decryptDarkForestCiphertext(ciphertext, sharedKey, ZKTypes.SNARK),
+    'decryptMessageCiphertext':
+      (
+        ciphertext: Ciphertext,
+        sharedKey: BigInt,
+      ) => decryptMessageCiphertext(ciphertext, sharedKey, ZKTypes.SNARK),
+  },
+  [ZKTypes.STARK]: {
+    'provers': {
+      'encryption': (args) => proveEncryption(
+        ZKTypes.STARK,
+        args,
+      ),
+      'hash': (args) => proveHash(ZKTypes.STARK, args),
+      'blur': (args) => proveBlur(ZKTypes.STARK, args),
+      'darkForest': (args) => proveDarkForest(ZKTypes.STARK, args),
+    },
+    'verifiers': {
+      'encryption': (proof) => verifyEncryption(ZKTypes.STARK, proof),
+      'hash': (proof) => verifyHash(ZKTypes.STARK, proof),
+      'blur': (proof) => verifyBlur(ZKTypes.STARK, proof),
+      'darkForest': (proof) => verifyDarkForest(ZKTypes.STARK, proof),
+    },
+    'hash': pedersenHash,
+    'sharedKey': sharedKeyStark,
+    'genSharedKey': genSharedKeyStark,
+    'genPrivKey': genPrivKeyStark,
+    'decrypt': decryptPedersen,
+    'decryptKeyCiphertext':
+      (
+        ciphertext: Ciphertext,
+        sharedKey: BigInt,
+      ) => decryptKeyCiphertext(ciphertext, sharedKey, ZKTypes.STARK),
+    'decryptDarkForestCiphertext':
+      (
+        ciphertext: Ciphertext,
+        sharedKey: BigInt,
+      ) => decryptDarkForestCiphertext(ciphertext, sharedKey, ZKTypes.STARK),
+    'decryptMessageCiphertext':
+      (
+        ciphertext: Ciphertext,
+        sharedKey: BigInt,
+      ) => decryptMessageCiphertext(ciphertext, sharedKey, ZKTypes.STARK),
+  },
+};
 
 function dec2bin(dec) {
   return dec.toString(2);
@@ -92,13 +191,14 @@ async function sharedKeyStark(
   return new Promise(resolve => {
     const _privKey = privKey.rawPrivKey;
     const _pubKey = pubKey.asArray();
-    post(`${STARKWARE_APP}/shared-key`, { priv_key: _privKey.toString(), pub_key: _pubKey.map(_ => _.toString()) }).then(res => {
+    post(`${STARKWARE_APP}/shared-key`, {
+      priv_key: _privKey.toString(),
+      pub_key: _pubKey.map(_ => _.toString()),
+    }).then(res => {
       resolve(BigInt(res.res));
     });
   });
 }
-
-const sharedKey = ZK === 'snark' ? sharedKeySnark : sharedKeyStark;
 
 async function genSharedKeySnark(): Promise<BigInt> {
   const key1 = new Keypair();
@@ -117,8 +217,6 @@ async function genSharedKeyStark(): Promise<BigInt> {
     });
   });
 }
-
-const genSharedKey = ZK === 'snark' ? genSharedKeySnark : genSharedKeyStark;
 
 async function genPrivKeySnarkAsync():
   Promise<{ privKey: BigInt; pubKey: BigInt[] }> {
@@ -145,8 +243,6 @@ async function genPrivKeyStark():
     });
   });
 }
-
-const genPrivKey = ZK === 'snark' ? genPrivKeySnarkAsync : genPrivKeyStark;
 
 function encryptMessage(message: BigInt, key: BigInt) {
   return encryptMimc([message], key);
@@ -227,16 +323,18 @@ function ciphertextAsCircuitInputs(ciphertext) {
 async function decryptDarkForestCiphertext(
   ciphertext: Ciphertext,
   sharedKey: BigInt,
+  zk: ZKTypes,
 ): Promise<BigInt[]> {
-  const message = await decrypt(ciphertext, sharedKey);
+  const message = await ZKFunctions[zk].decrypt(ciphertext, sharedKey);
   return message.map(BigInt);
 }
 
 async function decryptKeyCiphertext(
   ciphertext: Ciphertext,
   sharedKey: BigInt,
+  zk: ZKTypes,
 ): Promise<BigInt> {
-  const messageArray = await decrypt(ciphertext, sharedKey);
+  const messageArray = await ZKFunctions[zk].decrypt(ciphertext, sharedKey);
   const messageNum = messageArray[0];
   return BigInt(messageNum);
 }
@@ -246,7 +344,12 @@ async function decryptMimcAsync(
   sharedKey: BigInt,
 ): Promise<BigInt[]> {
   return new Promise(resolve => {
-    resolve(decryptMimc(ciphertext, sharedKey));
+    const res = decryptMimc(ciphertext, sharedKey);
+    if (res[0] < BigInt(0)) {
+      resolve([BigInt(res[0]) + BigInt(p)]);
+    } else {
+      resolve(res);
+    }
   });
 }
 
@@ -273,14 +376,6 @@ async function decryptPedersen(
   return Promise.all(output);
 }
 
-async function decrypt(
-  ciphertext: Ciphertext,
-  sharedKey: BigInt,
-): Promise<BigInt[]> {
-  const decryptor = ZK === 'snark' ? decryptMimcAsync : decryptPedersen;
-  return decryptor(ciphertext, sharedKey);
-}
-
 async function encryptPedersen(
   plaintext: BigInt,
   sharedKey: BigInt,
@@ -299,8 +394,9 @@ const encrypt = encryptPedersen;
 async function decryptMessageCiphertext(
   ciphertext: Ciphertext,
   sharedKey: BigInt,
+  zk: ZKTypes,
 ): Promise<string> {
-  const messageArray = await decrypt(ciphertext, sharedKey);
+  const messageArray = await ZKFunctions[zk].decrypt(ciphertext, sharedKey);
   const messageNum = messageArray[0];
   const messageBits = messageNum.toString(2);
   const length = messageBits.length + (8 - (messageBits.length % 8));
@@ -317,16 +413,11 @@ async function decryptMessageCiphertext(
 }
 
 export {
-  decryptKeyCiphertext,
-  decryptDarkForestCiphertext,
-  decryptMessageCiphertext,
+  ZKFunctions,
   ciphertextAsCircuitInputs,
   getKey,
   setKey,
   blurImage,
-  sharedKey,
-  genSharedKey,
-  genPrivKey,
   encryptMessage,
   encrypt,
   stringToNum,
@@ -338,5 +429,4 @@ export {
   modPBigIntNative,
   serializeUrl,
   parseUrl,
-  hash,
 };

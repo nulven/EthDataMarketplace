@@ -11,7 +11,7 @@ template Ecdh() {
 
   signal output shared_key;
 
-  var n = 250
+  var n = 253
 
   component privBits = Num2Bits(n);
   privBits.in <== private_key;

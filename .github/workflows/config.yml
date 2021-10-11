@@ -8,10 +8,11 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
       - run: echo NODE_ENV=production >> .env
-      - run: echo ZK='stark' >> .env
       - run: echo ETH_NETWORK='goerli' >> .env
       - run: echo NETWORK='ethereum' >> .env
       - run: echo STARKWARE_APP='https://fossairdrop.com' >> .env
+      - run: echo IPFS_HOST='fossairdrop.com' >> .env
+      - run: echo INFURA_ID=secrets.INFURA_ID >> .env
       - run: npm install
       - run: npm run build
       - run: echo privatenfts.xyz >> ./dist/CNAME

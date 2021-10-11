@@ -91,6 +91,7 @@ type NavigationBarProps = {
   activeTab: string;
   history: any;
   signer: any;
+  web3: any;
 }
 
 const NavigationBar = (props: NavigationBarProps) => {
@@ -119,7 +120,7 @@ const NavigationBar = (props: NavigationBarProps) => {
           activeTab={props.activeTab}
         />
       </ElementsWrapper>
-      {addresses.length > 0 ?
+      {addresses.length > 1 ?
         <LogoutButton onClick={sendToChooseUser}>
           Choose Address
         </LogoutButton>
@@ -128,7 +129,7 @@ const NavigationBar = (props: NavigationBarProps) => {
         <SidebarWrapper>
           <Title>{address.slice(0,6)}</Title>
           <Ipfs />
-          <LogoutButton onClick={() => {}}>
+          <LogoutButton onClick={props.web3.clearCachedProvider}>
             Logout
           </LogoutButton>
         </SidebarWrapper>

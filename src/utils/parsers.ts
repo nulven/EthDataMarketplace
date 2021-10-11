@@ -1,7 +1,7 @@
 import { ContentProperties, ZKTypes, Snark, Stark } from '../types';
 
 
-const hashParser = (outputs) => {
+const hashParser = (outputs): Output => {
   const _hash = BigInt(outputs[3]);
   const _ciphertext = {
     iv: BigInt(outputs[1]),
@@ -11,7 +11,7 @@ const hashParser = (outputs) => {
   return { contentProperty: _hash, ciphertext: _ciphertext };
 };
 
-const dfParser = (outputs) => {
+const dfParser = (outputs): Output => {
   const _hash = BigInt(outputs[4]);
   const _ciphertext = {
     iv: BigInt(outputs[1]),
@@ -23,7 +23,7 @@ const dfParser = (outputs) => {
   return { contentProperty: _hash, ciphertext: _ciphertext };
 };
 
-const blurParser = (outputs) => {
+const blurParser = (outputs): Output => {
   const _blurredImage =
     outputs.slice(1, 17).map(Number);
   return {
@@ -32,12 +32,18 @@ const blurParser = (outputs) => {
   };
 };
 
+interface Output {
+  contentProperty: any;
+  ciphertext: any;
+}
 
-const snarkParser = (parser: (outputs: BigInt[]) => {}) => (proof: Snark) => {
-  return parser(proof.publicSignals);
-};
 
-const starkParser = (parser: (proof: BigInt[]) => {}) => (proof: Stark) => {
+const snarkParser =
+  (parser: (outputs: BigInt[]) => Output) => (proof: Snark): Output => {
+    return parser(proof.publicSignals);
+  };
+
+const starkParser = (parser: (proof: BigInt[]) => Output) => (proof: Stark) => {
   return parser(proof.programOutputs);
 };
 

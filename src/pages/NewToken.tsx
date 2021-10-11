@@ -5,19 +5,19 @@ import { Button } from '../components/Button';
 import { Large } from '../components/text';
 import Spinner from '../components/Spinner';
 import TextInput from '../components/TextInput';
+import Toggle from '../components/Toggle';
 import PropertyToggle from '../app/PropertyToggle';
 import { ContentInput, ContentElements } from './Content';
 import {
-  genSharedKey,
   setKey,
-  hash,
+  ZKFunctions,
 } from '../utils/crypto';
-import config from '../../config';
 import eth from '../utils/ethAPI';
 import ipfs from '../utils/ipfs';
 
 import {
   ContentProperties,
+  ZKTypes,
   IpfsResponse,
   Snark,
   Stark,
@@ -42,6 +42,8 @@ const NewToken = (props) => {
   const [preimage, setPreimage] = useState('');
   const [property, setProperty] =
     useState<ContentProperties>(ContentProperties.HASH);
+  const [zk, setZK] =
+    useState<ZKTypes>(ZKTypes.SNARK);
   const [price, setPrice] = useState<BigInt>(BigInt(0));
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -54,12 +56,12 @@ const NewToken = (props) => {
     setLoading(true);
 
     const commitProof = (proof: Snark | Stark) => {
-      ipfs.addProof(proof).then((result: IpfsResponse) => {
+      ipfs.addProof(proof, zk).then((result: IpfsResponse) => {
         let url = result.path;
 
         setKey(url, sharedKey);
 
-        eth.api.postUrl(url, keyHash, property, price)
+        eth.api.postUrl(url, keyHash, property, price, zk)
           .then(() => {
             sendToTokens();
             setLoading(false);
@@ -72,8 +74,8 @@ const NewToken = (props) => {
       });
     };
 
-    const sharedKey = await genSharedKey();
-    const keyHash = await hash(sharedKey, BigInt(0));
+    const sharedKey = await ZKFunctions[zk].genSharedKey();
+    const keyHash = await ZKFunctions[zk].hash(sharedKey, BigInt(-1));
 
     setLoadingMessage('generating proof');
     const {
@@ -84,7 +86,7 @@ const NewToken = (props) => {
     const values = await computeProperty(preimage, sharedKey);
     const proofInputs = [sharedKey, ...values];
     assertProofInputs(proofInputs);
-    prover(proofInputs).then(commitProof);
+    prover[zk](proofInputs).then(commitProof);
   };
 
   const setPriceBigInt = (value: string) => {
@@ -101,6 +103,11 @@ const NewToken = (props) => {
         <NewTokenWrapper>
           <Title>Sell your Token</Title>
           <PropertyToggle property={property} setProperty={setProperty} />
+          <Toggle
+            element={zk}
+            elements={ZKTypes}
+            setElement={setZK}
+          />
           <ContentInput
             property={property}
             preimage={preimage}

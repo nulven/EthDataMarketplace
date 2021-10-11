@@ -4,15 +4,15 @@ import assert from 'assert';
 
 import {
   blurImage,
+  ZKFunctions,
 } from '../../utils/crypto';
-import {
-  proveBlur,
-  verifyBlur,
-} from '../../utils/prover';
 
 import {
   InputProps,
 } from '../../types/content';
+import {
+  ZKTypes,
+} from '../../types';
 
 
 type PixelProps = {
@@ -136,10 +136,16 @@ const json = {
   input: ImageInput,
   display: ImageLarge,
   list: ImageSmall,
-  decrypt: blurImage,
+  decrypt: (zk, a, b) => blurImage(a, b),
   computeProperty,
-  prover: proveBlur,
-  verifier: verifyBlur,
+  prover: {
+    [ZKTypes.SNARK]: ZKFunctions[ZKTypes.SNARK].provers.blur,
+    [ZKTypes.STARK]: ZKFunctions[ZKTypes.STARK].provers.blur,
+  },
+  verifier: {
+    [ZKTypes.SNARK]: ZKFunctions[ZKTypes.SNARK].verifiers.blur,
+    [ZKTypes.STARK]: ZKFunctions[ZKTypes.STARK].verifiers.blur,
+  },
   assertProofInputs,
   assertContent,
   assertMessage,

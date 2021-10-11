@@ -10,6 +10,7 @@ interface Props {
   Subpage: any;
   navbar: boolean;
   signer: any;
+  web3: any;
 }
 
 export default function Page(props: Props) {
@@ -34,6 +35,7 @@ export default function Page(props: Props) {
               activeTab={path}
               history={_props.history}
               signer={props.signer}
+              web3={props.web3}
             />
             : null}
           <Subpage {..._props} signer={props.signer} />

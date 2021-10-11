@@ -10,9 +10,8 @@ import { Content, ContentElements } from './Content';
 
 import eth from '../utils/ethAPI';
 import ipfs from '../utils/ipfs';
-import { getKey } from '../utils/crypto';
+import { getKey, ZKFunctions } from '../utils/crypto';
 import { Parsers } from '../utils/parsers';
-import { proveEncryption } from '../utils/prover';
 
 import {
   TokenStates,
@@ -22,9 +21,9 @@ import {
   EmptyStark,
   Ciphertext,
   ContentProperties,
+  ZKTypes,
 } from '../types';
 
-const ZK = config.zk;
 const TokenWrapper = styled.div`
   margin-top: 10%;
   margin-left: 15%;
@@ -100,6 +99,7 @@ const Token = (props) => {
   const contentId = props.match.params.id;
   const [content, setContent] = useState(null);
   const [property, setProperty] = useState<ContentProperties>(null);
+  const [zk, setZK] = useState<ZKTypes>(null);
   const [loading, setLoading] = useState<string>('');
   const [tokenState, setTokenState] = useState<TokenStates>(null);
   const [tokens, setToken] = useState([]);
@@ -115,20 +115,21 @@ const Token = (props) => {
     if (props.signer) {
       eth.api.getContent(contentId).then(_content => {
         setContent(_content);
+        setZK(_content.zk);
         eth.api.getTokens(contentId).then((_tokens: BigInt[]) => {
           setToken(_tokens);
         });
         eth.api.getProperty(contentId).then(_property => {
           if (_property) {
             setProperty(_property);
-            ipfs.getProof(_content.url).then(_proof => {
+            ipfs.getProof(_content.url, _content.zk).then(_proof => {
               setProof(_proof);
               setState().then(state => {
                 if (state === TokenStates.SELLER) {
                   const _key = getKey(_content.url);
                   setKey(_key);
                 }
-                const parser = Parsers[ZK][_property];
+                const parser = Parsers[_content.zk][_property];
                 const { contentProperty, ciphertext } = parser(_proof);
                 setContentProperty(contentProperty);
                 setCiphertext(ciphertext);
@@ -169,7 +170,7 @@ const Token = (props) => {
         throw new Error(`${property} verifier not found`);
       }
 
-      const verified = await verifier(proof);
+      const verified = await verifier[zk](proof);
       if (!verified) {
         throw new Error('Not a valid token');
       }
@@ -188,7 +189,7 @@ const Token = (props) => {
       }
 
       setLoading('purchasing token');
-      const purchase = await eth.api.buyToken(contentId);
+      const purchase = await eth.api.buyToken(contentId, zk);
       if (!purchase) {
         throw new Error('Not a valid token');
       }
@@ -210,12 +211,13 @@ const Token = (props) => {
       const address = await eth.api.getCreator(contentId);
 
       setLoading('get public key');
-      const publicKey = await eth.api.getPublicKey(address);
+      const publicKey = await eth.api.getPublicKey(address, zk);
       const [_ciphertext, _key] = await eth.retrieveCiphertext(
         _keyCiphertext,
         publicKey,
         property,
         proof,
+        zk,
       );
 
       setKey(_key);
@@ -231,20 +233,20 @@ const Token = (props) => {
   const redeemEth = (tokenId: BigInt) => async () => {
     try {
       setLoading('generating proof');
-      const publicKey = await eth.api.getOwner(tokenId);
+      const publicKey = await eth.api.getOwner(tokenId, zk);
 
-      const privKey = new PrivKey(eth.privateKey);
+      const privKey = new PrivKey(eth.privateKey[zk]);
       const pubKey = new PubKey([publicKey[0], publicKey[1]]);
       const _key = getKey(content.url);
 
-      const proof = await proveEncryption(
+      const proof = await ZKFunctions[zk].provers.encryption([
         _key,
         privKey,
         pubKey,
-      );
+      ]);
 
       setLoading('sending proof to contract');
-      await eth.api.redeem(proof, tokenId);
+      await eth.api.redeem(proof, tokenId, zk);
 
       setLoading('');
     } catch (error) {
@@ -264,6 +266,7 @@ const Token = (props) => {
             <Content
               secretKey={key}
               property={property}
+              zk={zk}
               content={{
                 cipher: ciphertext,
                 property: contentProperty,

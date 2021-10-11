@@ -1,22 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import assert from 'assert';
-import { mimc7 } from 'circomlib';
 
 import TextInput from '../../components/TextInput';
 import { Large } from '../../components/text';
 import Resize from '../../components/Resize';
 
 import {
-  decryptMessageCiphertext,
+  ZKFunctions,
   stringToNum,
 } from '../../utils/crypto';
-import {
-  proveHash,
-  verifyHash,
-} from '../../utils/prover';
 
 import { InputProps } from '../../types/content';
+import { ZKTypes } from '../../types';
 
 
 const HashWrapper = styled.div`
@@ -112,10 +108,17 @@ const json = {
   input: HashInput,
   display: Hash,
   list: Hash,
-  decrypt: decryptMessageCiphertext,
+  decrypt: (zk, ...args) =>
+    ZKFunctions[zk].decryptMessageCiphertext(...args),
   computeProperty,
-  prover: proveHash,
-  verifier: verifyHash,
+  prover: {
+    [ZKTypes.SNARK]: ZKFunctions[ZKTypes.SNARK].provers.hash,
+    [ZKTypes.STARK]: ZKFunctions[ZKTypes.STARK].provers.hash,
+  },
+  verifier: {
+    [ZKTypes.SNARK]: ZKFunctions[ZKTypes.SNARK].verifiers.hash,
+    [ZKTypes.STARK]: ZKFunctions[ZKTypes.STARK].verifiers.hash,
+  },
   assertProofInputs,
   assertContent,
   assertMessage,

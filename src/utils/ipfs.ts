@@ -1,15 +1,14 @@
 import ipfsAPI from 'ipfs-http-client';
 import { BufferList } from 'bl';
+import config from '../../config';
 
 import {
   Snark,
   Stark,
   IpfsResponse,
+  ZKTypes,
 } from '../types';
-import config from '../../config';
 
-
-const ZK = config.zk;
 
 class IpfsConnection {
   api: any;
@@ -21,6 +20,7 @@ class IpfsConnection {
   constructor() {
     this.getCachedSettings();
     this.setApi();
+    this.updateSettings(config.ipfsHost, 'http', '', '');
   }
 
   getCachedSettings() {
@@ -103,11 +103,12 @@ class IpfsConnection {
     }
   }
 
-  public async getProof(url: string): Promise<Snark | Stark> {
+  getter: (url: string) => Promise<any>;
+  public async getProof(url: string, zk: ZKTypes): Promise<Snark | Stark> {
+    this.getter = zk === 'snark' ? this.getSnark : this.getStark;
     return this.getter(url);
   }
 
-  getter = ZK === 'snark' ? this.getSnark : this.getStark;
 
   public async getSnark(url: string): Promise<Snark> {
     return new Promise(resolve => {
@@ -149,9 +150,10 @@ class IpfsConnection {
     });
   }
 
-  adder = ZK === 'snark' ? this.addSnark : this.addStark;
 
-  public async addProof(json): Promise<IpfsResponse> {
+  adder: (json) => Promise<IpfsResponse>;
+  public async addProof(json, zk: ZKTypes): Promise<IpfsResponse> {
+    this.adder = zk === ZKTypes.SNARK ? this.addSnark : this.addStark;
     return this.adder(json);
   }
 
