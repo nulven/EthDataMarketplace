@@ -10,7 +10,7 @@ jobs:
       - run: echo NODE_ENV=production >> .env
       - run: echo ETH_NETWORK='goerli' >> .env
       - run: echo NETWORK='ethereum' >> .env
-      - run: echo STARKWARE_APP='https://fossairdrop.com' >> .env
+      - run: echo STARKWARE_APP='http://fossairdrop.com' >> .env
       - run: echo IPFS_HOST='fossairdrop.com' >> .env
       - run: echo INFURA_ID=secrets.INFURA_ID >> .env
       - run: npm install
