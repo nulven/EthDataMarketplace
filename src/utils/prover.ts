@@ -94,7 +94,7 @@ export async function proveEncryption(
 ) {
   return prove('encryption', {
     key: args[0].toString(),
-    seller_private_key: args[1].asCircuitInputs(),
+    seller_private_key: zk === ZKTypes.SNARK ? args[1].asCircuitInputs() : args[1].rawPrivKey.toString(),
     buyer_public_key: args[2].asCircuitInputs(),
   }, zk);
 }
