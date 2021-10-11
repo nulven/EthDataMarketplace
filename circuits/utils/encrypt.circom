@@ -65,6 +65,6 @@ template Decrypt() {
   // iv is message[0]
   hasher = MiMC7(91);
   hasher.x_in <== shared_key;
-  hasher.k <== message[0] + i;
+  hasher.k <== message[0];
   out <== message[1] - hasher.out;
 }
