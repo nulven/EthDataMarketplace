@@ -100,9 +100,6 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new HtmlWebpackPlugin({
-      template: './public/index.html',
-    }),
     new CopyPlugin({
       patterns: [
         { from: 'public', to: '' },
