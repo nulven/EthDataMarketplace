@@ -20,7 +20,7 @@ class IpfsConnection {
   constructor() {
     this.getCachedSettings();
     this.setApi();
-    this.updateSettings(config.ipfsHost, 'http', '', '');
+    this.updateSettings(config.ipfsHost, 'https', '', '');
   }
 
   getCachedSettings() {
