@@ -1,8 +1,6 @@
-import * as dotenv from 'dotenv';
-dotenv.config({ path: '/home/nulven/CairoDataMarketplace/.env' });
 import { Contract, providers } from 'ethers';
 import { Parsers } from './parsers';
-import { modPBigIntNative } from './crypto';
+import { modPBigIntNative, ZKFunctions } from './crypto';
 
 import contractJSON from '../../public/contracts/Core.json';
 import gettersContractJSON from '../../public/contracts/Getters.json';
@@ -10,9 +8,6 @@ import gettersContractJSON from '../../public/contracts/Getters.json';
 import { OurErrors, SolidityErrors } from './errors';
 
 import { PrivKey, PubKey } from 'maci-domainobjs';
-import {
-  ZKFunctions,
-} from '../utils/crypto';
 import {
   Ciphertext,
   Snark,
