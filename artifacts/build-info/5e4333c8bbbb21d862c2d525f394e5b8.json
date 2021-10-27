@@ -1,0 +1,2091 @@
+{
+  "id": "5e4333c8bbbb21d862c2d525f394e5b8",
+  "_format": "hh-sol-build-info-1",
+  "solcVersion": "0.8.3",
+  "solcLongVersion": "0.8.3+commit.8d00100c",
+  "input": {
+    "language": "Solidity",
+    "sources": {
+      "contracts/DarkForestCore.sol": {
+        "content": "pragma solidity >=0.7.6;\npragma experimental ABIEncoderV2;\n\nimport \"./DarkForestUtils.sol\";\n\ncontract DarkForestCore {\n  DarkForestUtils.GameStorage public s;\n\n  constructor() public {\n    DarkForestUtils.Planet memory planet = DarkForestUtils.Planet({\n      owner: msg.sender,\n      isHomePlanet: true\n    });\n\n    uint256 location = 5228530872000388647816463285860870411975878209802611613611963004792914824074;\n    s.planets[location] = planet;\n\n    s.snarkConstants = DarkForestUtils.SnarkConstants({\n      PLANETHASH_KEY: 2149252641268674884343858554091843927095993520400352350070838229268101760471\n    });\n  }\n\n  function planets(uint256 key) public view returns (DarkForestUtils.Planet memory) {\n    return s.planets[key];\n  }\n\n  function snarkConstants() public view returns (DarkForestUtils.SnarkConstants memory) {\n    return s.snarkConstants;\n  }\n\n}\n"
+      },
+      "contracts/DarkForestUtils.sol": {
+        "content": "library DarkForestUtils {\n  struct Planet {\n    address owner;\n    bool isHomePlanet;\n  }\n\n  struct SnarkConstants {\n    uint256 PLANETHASH_KEY;\n  }\n\n  struct GameStorage {\n    mapping(uint256 => Planet) planets;\n    SnarkConstants snarkConstants;\n  }\n\n  function getGameStorage() public pure returns (GameStorage storage ret) {\n    bytes32 position = bytes32(uint256(1));\n      assembly {\n          ret.slot := position\n      }\n  }\n}\n"
+      }
+    },
+    "settings": {
+      "metadata": {
+        "bytecodeHash": "none"
+      },
+      "optimizer": {
+        "enabled": true,
+        "runs": 800
+      },
+      "outputSelection": {
+        "*": {
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers"
+          ],
+          "": [
+            "ast"
+          ]
+        }
+      }
+    }
+  },
+  "output": {
+    "contracts": {
+      "contracts/DarkForestCore.sol": {
+        "DarkForestCore": {
+          "abi": [
+            {
+              "inputs": [],
+              "stateMutability": "nonpayable",
+              "type": "constructor"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "key",
+                  "type": "uint256"
+                }
+              ],
+              "name": "planets",
+              "outputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "address",
+                      "name": "owner",
+                      "type": "address"
+                    },
+                    {
+                      "internalType": "bool",
+                      "name": "isHomePlanet",
+                      "type": "bool"
+                    }
+                  ],
+                  "internalType": "struct DarkForestUtils.Planet",
+                  "name": "",
+                  "type": "tuple"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "s",
+              "outputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "PLANETHASH_KEY",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct DarkForestUtils.SnarkConstants",
+                  "name": "snarkConstants",
+                  "type": "tuple"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "snarkConstants",
+              "outputs": [
+                {
+                  "components": [
+                    {
+                      "internalType": "uint256",
+                      "name": "PLANETHASH_KEY",
+                      "type": "uint256"
+                    }
+                  ],
+                  "internalType": "struct DarkForestUtils.SnarkConstants",
+                  "name": "",
+                  "type": "tuple"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ],
+          "evm": {
+            "bytecode": {
+              "generatedSources": [],
+              "linkReferences": {},
+              "object": "608060405234801561001057600080fd5b50604080518082018252338152600160208083018281527f0b8f3e5cb1e0519c520b88073ab3be1313af840e2f2682ba2e77c948b27bcb8a6000908152825292517f190130b61c65d0bc84a5bab3064c7d963327e80b54c17dbf4714f663cc5f2678805494511515600160a01b026001600160a81b03199095166001600160a01b0392909216919091179390931790925582519182019092527f04c06f1329eb7d8e37e558c329a5ffc2b896718ab7dd897b7d45feae09a285d7908190529055610160806100df6000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c806326c1e7501461004657806351baf19e146100f757806386b714e214610124575b600080fd5b6100bf61005436600461013b565b6040805180820190915260008082526020820152506000908152602081815260409182902082518084019093525473ffffffffffffffffffffffffffffffffffffffff8116835274010000000000000000000000000000000000000000900460ff1615159082015290565b60408051825173ffffffffffffffffffffffffffffffffffffffff168152602092830151151592810192909252015b60405180910390f35b60408051602080820183526000909152815190810190915260015481525b604051905181526020016100ee565b604080516020810190915260015481526101159081565b60006020828403121561014c578081fd5b503591905056fea164736f6c6343000803000a",
+              "opcodes": "PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH2 0x10 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x40 DUP1 MLOAD DUP1 DUP3 ADD DUP3 MSTORE CALLER DUP2 MSTORE PUSH1 0x1 PUSH1 0x20 DUP1 DUP4 ADD DUP3 DUP2 MSTORE PUSH32 0xB8F3E5CB1E0519C520B88073AB3BE1313AF840E2F2682BA2E77C948B27BCB8A PUSH1 0x0 SWAP1 DUP2 MSTORE DUP3 MSTORE SWAP3 MLOAD PUSH32 0x190130B61C65D0BC84A5BAB3064C7D963327E80B54C17DBF4714F663CC5F2678 DUP1 SLOAD SWAP5 MLOAD ISZERO ISZERO PUSH1 0x1 PUSH1 0xA0 SHL MUL PUSH1 0x1 PUSH1 0x1 PUSH1 0xA8 SHL SUB NOT SWAP1 SWAP6 AND PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB SWAP3 SWAP1 SWAP3 AND SWAP2 SWAP1 SWAP2 OR SWAP4 SWAP1 SWAP4 OR SWAP1 SWAP3 SSTORE DUP3 MLOAD SWAP2 DUP3 ADD SWAP1 SWAP3 MSTORE PUSH32 0x4C06F1329EB7D8E37E558C329A5FFC2B896718AB7DD897B7D45FEAE09A285D7 SWAP1 DUP2 SWAP1 MSTORE SWAP1 SSTORE PUSH2 0x160 DUP1 PUSH2 0xDF PUSH1 0x0 CODECOPY PUSH1 0x0 RETURN INVALID PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH2 0x10 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x4 CALLDATASIZE LT PUSH2 0x41 JUMPI PUSH1 0x0 CALLDATALOAD PUSH1 0xE0 SHR DUP1 PUSH4 0x26C1E750 EQ PUSH2 0x46 JUMPI DUP1 PUSH4 0x51BAF19E EQ PUSH2 0xF7 JUMPI DUP1 PUSH4 0x86B714E2 EQ PUSH2 0x124 JUMPI JUMPDEST PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH2 0xBF PUSH2 0x54 CALLDATASIZE PUSH1 0x4 PUSH2 0x13B JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD DUP1 DUP3 ADD SWAP1 SWAP2 MSTORE PUSH1 0x0 DUP1 DUP3 MSTORE PUSH1 0x20 DUP3 ADD MSTORE POP PUSH1 0x0 SWAP1 DUP2 MSTORE PUSH1 0x20 DUP2 DUP2 MSTORE PUSH1 0x40 SWAP2 DUP3 SWAP1 KECCAK256 DUP3 MLOAD DUP1 DUP5 ADD SWAP1 SWAP4 MSTORE SLOAD PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF DUP2 AND DUP4 MSTORE PUSH21 0x10000000000000000000000000000000000000000 SWAP1 DIV PUSH1 0xFF AND ISZERO ISZERO SWAP1 DUP3 ADD MSTORE SWAP1 JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD DUP3 MLOAD PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 SWAP3 DUP4 ADD MLOAD ISZERO ISZERO SWAP3 DUP2 ADD SWAP3 SWAP1 SWAP3 MSTORE ADD JUMPDEST PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH1 0x40 DUP1 MLOAD PUSH1 0x20 DUP1 DUP3 ADD DUP4 MSTORE PUSH1 0x0 SWAP1 SWAP2 MSTORE DUP2 MLOAD SWAP1 DUP2 ADD SWAP1 SWAP2 MSTORE PUSH1 0x1 SLOAD DUP2 MSTORE JUMPDEST PUSH1 0x40 MLOAD SWAP1 MLOAD DUP2 MSTORE PUSH1 0x20 ADD PUSH2 0xEE JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD PUSH1 0x20 DUP2 ADD SWAP1 SWAP2 MSTORE PUSH1 0x1 SLOAD DUP2 MSTORE PUSH2 0x115 SWAP1 DUP2 JUMP JUMPDEST PUSH1 0x0 PUSH1 0x20 DUP3 DUP5 SUB SLT ISZERO PUSH2 0x14C JUMPI DUP1 DUP2 REVERT JUMPDEST POP CALLDATALOAD SWAP2 SWAP1 POP JUMP INVALID LOG1 PUSH5 0x736F6C6343 STOP ADDMOD SUB STOP EXP ",
+              "sourceMap": "93:766:0:-:0;;;162:452;;;;;;;;;-1:-1:-1;228:81:0;;;;;;;;266:10;228:81;;298:4;228:81;;;;;;;335:76;189:36;417:19;;;;;:28;;:19;:28;;;;;;-1:-1:-1;;;417:28:0;-1:-1:-1;;;;;;417:28:0;;;-1:-1:-1;;;;;417:28:0;;;;;;;;;;;;;;;471:138;;;;;;;;526:76;471:138;;;;452:157;;93:766;;;;;;"
+            },
+            "deployedBytecode": {
+              "generatedSources": [
+                {
+                  "ast": {
+                    "nodeType": "YulBlock",
+                    "src": "0:816:2",
+                    "statements": [
+                      {
+                        "nodeType": "YulBlock",
+                        "src": "6:3:2",
+                        "statements": []
+                      },
+                      {
+                        "body": {
+                          "nodeType": "YulBlock",
+                          "src": "84:120:2",
+                          "statements": [
+                            {
+                              "body": {
+                                "nodeType": "YulBlock",
+                                "src": "130:26:2",
+                                "statements": [
+                                  {
+                                    "expression": {
+                                      "arguments": [
+                                        {
+                                          "name": "value0",
+                                          "nodeType": "YulIdentifier",
+                                          "src": "139:6:2"
+                                        },
+                                        {
+                                          "name": "value0",
+                                          "nodeType": "YulIdentifier",
+                                          "src": "147:6:2"
+                                        }
+                                      ],
+                                      "functionName": {
+                                        "name": "revert",
+                                        "nodeType": "YulIdentifier",
+                                        "src": "132:6:2"
+                                      },
+                                      "nodeType": "YulFunctionCall",
+                                      "src": "132:22:2"
+                                    },
+                                    "nodeType": "YulExpressionStatement",
+                                    "src": "132:22:2"
+                                  }
+                                ]
+                              },
+                              "condition": {
+                                "arguments": [
+                                  {
+                                    "arguments": [
+                                      {
+                                        "name": "dataEnd",
+                                        "nodeType": "YulIdentifier",
+                                        "src": "105:7:2"
+                                      },
+                                      {
+                                        "name": "headStart",
+                                        "nodeType": "YulIdentifier",
+                                        "src": "114:9:2"
+                                      }
+                                    ],
+                                    "functionName": {
+                                      "name": "sub",
+                                      "nodeType": "YulIdentifier",
+                                      "src": "101:3:2"
+                                    },
+                                    "nodeType": "YulFunctionCall",
+                                    "src": "101:23:2"
+                                  },
+                                  {
+                                    "kind": "number",
+                                    "nodeType": "YulLiteral",
+                                    "src": "126:2:2",
+                                    "type": "",
+                                    "value": "32"
+                                  }
+                                ],
+                                "functionName": {
+                                  "name": "slt",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "97:3:2"
+                                },
+                                "nodeType": "YulFunctionCall",
+                                "src": "97:32:2"
+                              },
+                              "nodeType": "YulIf",
+                              "src": "94:2:2"
+                            },
+                            {
+                              "nodeType": "YulAssignment",
+                              "src": "165:33:2",
+                              "value": {
+                                "arguments": [
+                                  {
+                                    "name": "headStart",
+                                    "nodeType": "YulIdentifier",
+                                    "src": "188:9:2"
+                                  }
+                                ],
+                                "functionName": {
+                                  "name": "calldataload",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "175:12:2"
+                                },
+                                "nodeType": "YulFunctionCall",
+                                "src": "175:23:2"
+                              },
+                              "variableNames": [
+                                {
+                                  "name": "value0",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "165:6:2"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "name": "abi_decode_tuple_t_uint256",
+                        "nodeType": "YulFunctionDefinition",
+                        "parameters": [
+                          {
+                            "name": "headStart",
+                            "nodeType": "YulTypedName",
+                            "src": "50:9:2",
+                            "type": ""
+                          },
+                          {
+                            "name": "dataEnd",
+                            "nodeType": "YulTypedName",
+                            "src": "61:7:2",
+                            "type": ""
+                          }
+                        ],
+                        "returnVariables": [
+                          {
+                            "name": "value0",
+                            "nodeType": "YulTypedName",
+                            "src": "73:6:2",
+                            "type": ""
+                          }
+                        ],
+                        "src": "14:190:2"
+                      },
+                      {
+                        "body": {
+                          "nodeType": "YulBlock",
+                          "src": "354:211:2",
+                          "statements": [
+                            {
+                              "nodeType": "YulAssignment",
+                              "src": "364:26:2",
+                              "value": {
+                                "arguments": [
+                                  {
+                                    "name": "headStart",
+                                    "nodeType": "YulIdentifier",
+                                    "src": "376:9:2"
+                                  },
+                                  {
+                                    "kind": "number",
+                                    "nodeType": "YulLiteral",
+                                    "src": "387:2:2",
+                                    "type": "",
+                                    "value": "64"
+                                  }
+                                ],
+                                "functionName": {
+                                  "name": "add",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "372:3:2"
+                                },
+                                "nodeType": "YulFunctionCall",
+                                "src": "372:18:2"
+                              },
+                              "variableNames": [
+                                {
+                                  "name": "tail",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "364:4:2"
+                                }
+                              ]
+                            },
+                            {
+                              "expression": {
+                                "arguments": [
+                                  {
+                                    "name": "headStart",
+                                    "nodeType": "YulIdentifier",
+                                    "src": "406:9:2"
+                                  },
+                                  {
+                                    "arguments": [
+                                      {
+                                        "arguments": [
+                                          {
+                                            "name": "value0",
+                                            "nodeType": "YulIdentifier",
+                                            "src": "427:6:2"
+                                          }
+                                        ],
+                                        "functionName": {
+                                          "name": "mload",
+                                          "nodeType": "YulIdentifier",
+                                          "src": "421:5:2"
+                                        },
+                                        "nodeType": "YulFunctionCall",
+                                        "src": "421:13:2"
+                                      },
+                                      {
+                                        "kind": "number",
+                                        "nodeType": "YulLiteral",
+                                        "src": "436:42:2",
+                                        "type": "",
+                                        "value": "0xffffffffffffffffffffffffffffffffffffffff"
+                                      }
+                                    ],
+                                    "functionName": {
+                                      "name": "and",
+                                      "nodeType": "YulIdentifier",
+                                      "src": "417:3:2"
+                                    },
+                                    "nodeType": "YulFunctionCall",
+                                    "src": "417:62:2"
+                                  }
+                                ],
+                                "functionName": {
+                                  "name": "mstore",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "399:6:2"
+                                },
+                                "nodeType": "YulFunctionCall",
+                                "src": "399:81:2"
+                              },
+                              "nodeType": "YulExpressionStatement",
+                              "src": "399:81:2"
+                            },
+                            {
+                              "expression": {
+                                "arguments": [
+                                  {
+                                    "arguments": [
+                                      {
+                                        "name": "headStart",
+                                        "nodeType": "YulIdentifier",
+                                        "src": "500:9:2"
+                                      },
+                                      {
+                                        "kind": "number",
+                                        "nodeType": "YulLiteral",
+                                        "src": "511:4:2",
+                                        "type": "",
+                                        "value": "0x20"
+                                      }
+                                    ],
+                                    "functionName": {
+                                      "name": "add",
+                                      "nodeType": "YulIdentifier",
+                                      "src": "496:3:2"
+                                    },
+                                    "nodeType": "YulFunctionCall",
+                                    "src": "496:20:2"
+                                  },
+                                  {
+                                    "arguments": [
+                                      {
+                                        "arguments": [
+                                          {
+                                            "arguments": [
+                                              {
+                                                "arguments": [
+                                                  {
+                                                    "name": "value0",
+                                                    "nodeType": "YulIdentifier",
+                                                    "src": "542:6:2"
+                                                  },
+                                                  {
+                                                    "kind": "number",
+                                                    "nodeType": "YulLiteral",
+                                                    "src": "550:4:2",
+                                                    "type": "",
+                                                    "value": "0x20"
+                                                  }
+                                                ],
+                                                "functionName": {
+                                                  "name": "add",
+                                                  "nodeType": "YulIdentifier",
+                                                  "src": "538:3:2"
+                                                },
+                                                "nodeType": "YulFunctionCall",
+                                                "src": "538:17:2"
+                                              }
+                                            ],
+                                            "functionName": {
+                                              "name": "mload",
+                                              "nodeType": "YulIdentifier",
+                                              "src": "532:5:2"
+                                            },
+                                            "nodeType": "YulFunctionCall",
+                                            "src": "532:24:2"
+                                          }
+                                        ],
+                                        "functionName": {
+                                          "name": "iszero",
+                                          "nodeType": "YulIdentifier",
+                                          "src": "525:6:2"
+                                        },
+                                        "nodeType": "YulFunctionCall",
+                                        "src": "525:32:2"
+                                      }
+                                    ],
+                                    "functionName": {
+                                      "name": "iszero",
+                                      "nodeType": "YulIdentifier",
+                                      "src": "518:6:2"
+                                    },
+                                    "nodeType": "YulFunctionCall",
+                                    "src": "518:40:2"
+                                  }
+                                ],
+                                "functionName": {
+                                  "name": "mstore",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "489:6:2"
+                                },
+                                "nodeType": "YulFunctionCall",
+                                "src": "489:70:2"
+                              },
+                              "nodeType": "YulExpressionStatement",
+                              "src": "489:70:2"
+                            }
+                          ]
+                        },
+                        "name": "abi_encode_tuple_t_struct$_Planet_$74_memory_ptr__to_t_struct$_Planet_$74_memory_ptr__fromStack_reversed",
+                        "nodeType": "YulFunctionDefinition",
+                        "parameters": [
+                          {
+                            "name": "headStart",
+                            "nodeType": "YulTypedName",
+                            "src": "323:9:2",
+                            "type": ""
+                          },
+                          {
+                            "name": "value0",
+                            "nodeType": "YulTypedName",
+                            "src": "334:6:2",
+                            "type": ""
+                          }
+                        ],
+                        "returnVariables": [
+                          {
+                            "name": "tail",
+                            "nodeType": "YulTypedName",
+                            "src": "345:4:2",
+                            "type": ""
+                          }
+                        ],
+                        "src": "209:356:2"
+                      },
+                      {
+                        "body": {
+                          "nodeType": "YulBlock",
+                          "src": "731:83:2",
+                          "statements": [
+                            {
+                              "nodeType": "YulAssignment",
+                              "src": "741:26:2",
+                              "value": {
+                                "arguments": [
+                                  {
+                                    "name": "headStart",
+                                    "nodeType": "YulIdentifier",
+                                    "src": "753:9:2"
+                                  },
+                                  {
+                                    "kind": "number",
+                                    "nodeType": "YulLiteral",
+                                    "src": "764:2:2",
+                                    "type": "",
+                                    "value": "32"
+                                  }
+                                ],
+                                "functionName": {
+                                  "name": "add",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "749:3:2"
+                                },
+                                "nodeType": "YulFunctionCall",
+                                "src": "749:18:2"
+                              },
+                              "variableNames": [
+                                {
+                                  "name": "tail",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "741:4:2"
+                                }
+                              ]
+                            },
+                            {
+                              "expression": {
+                                "arguments": [
+                                  {
+                                    "name": "headStart",
+                                    "nodeType": "YulIdentifier",
+                                    "src": "783:9:2"
+                                  },
+                                  {
+                                    "arguments": [
+                                      {
+                                        "name": "value0",
+                                        "nodeType": "YulIdentifier",
+                                        "src": "800:6:2"
+                                      }
+                                    ],
+                                    "functionName": {
+                                      "name": "mload",
+                                      "nodeType": "YulIdentifier",
+                                      "src": "794:5:2"
+                                    },
+                                    "nodeType": "YulFunctionCall",
+                                    "src": "794:13:2"
+                                  }
+                                ],
+                                "functionName": {
+                                  "name": "mstore",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "776:6:2"
+                                },
+                                "nodeType": "YulFunctionCall",
+                                "src": "776:32:2"
+                              },
+                              "nodeType": "YulExpressionStatement",
+                              "src": "776:32:2"
+                            }
+                          ]
+                        },
+                        "name": "abi_encode_tuple_t_struct$_SnarkConstants_$77_memory_ptr__to_t_struct$_SnarkConstants_$77_memory_ptr__fromStack_reversed",
+                        "nodeType": "YulFunctionDefinition",
+                        "parameters": [
+                          {
+                            "name": "headStart",
+                            "nodeType": "YulTypedName",
+                            "src": "700:9:2",
+                            "type": ""
+                          },
+                          {
+                            "name": "value0",
+                            "nodeType": "YulTypedName",
+                            "src": "711:6:2",
+                            "type": ""
+                          }
+                        ],
+                        "returnVariables": [
+                          {
+                            "name": "tail",
+                            "nodeType": "YulTypedName",
+                            "src": "722:4:2",
+                            "type": ""
+                          }
+                        ],
+                        "src": "570:244:2"
+                      }
+                    ]
+                  },
+                  "contents": "{\n    { }\n    function abi_decode_tuple_t_uint256(headStart, dataEnd) -> value0\n    {\n        if slt(sub(dataEnd, headStart), 32) { revert(value0, value0) }\n        value0 := calldataload(headStart)\n    }\n    function abi_encode_tuple_t_struct$_Planet_$74_memory_ptr__to_t_struct$_Planet_$74_memory_ptr__fromStack_reversed(headStart, value0) -> tail\n    {\n        tail := add(headStart, 64)\n        mstore(headStart, and(mload(value0), 0xffffffffffffffffffffffffffffffffffffffff))\n        mstore(add(headStart, 0x20), iszero(iszero(mload(add(value0, 0x20)))))\n    }\n    function abi_encode_tuple_t_struct$_SnarkConstants_$77_memory_ptr__to_t_struct$_SnarkConstants_$77_memory_ptr__fromStack_reversed(headStart, value0) -> tail\n    {\n        tail := add(headStart, 32)\n        mstore(headStart, mload(value0))\n    }\n}",
+                  "id": 2,
+                  "language": "Yul",
+                  "name": "#utility.yul"
+                }
+              ],
+              "immutableReferences": {},
+              "linkReferences": {},
+              "object": "608060405234801561001057600080fd5b50600436106100415760003560e01c806326c1e7501461004657806351baf19e146100f757806386b714e214610124575b600080fd5b6100bf61005436600461013b565b6040805180820190915260008082526020820152506000908152602081815260409182902082518084019093525473ffffffffffffffffffffffffffffffffffffffff8116835274010000000000000000000000000000000000000000900460ff1615159082015290565b60408051825173ffffffffffffffffffffffffffffffffffffffff168152602092830151151592810192909252015b60405180910390f35b60408051602080820183526000909152815190810190915260015481525b604051905181526020016100ee565b604080516020810190915260015481526101159081565b60006020828403121561014c578081fd5b503591905056fea164736f6c6343000803000a",
+              "opcodes": "PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH2 0x10 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x4 CALLDATASIZE LT PUSH2 0x41 JUMPI PUSH1 0x0 CALLDATALOAD PUSH1 0xE0 SHR DUP1 PUSH4 0x26C1E750 EQ PUSH2 0x46 JUMPI DUP1 PUSH4 0x51BAF19E EQ PUSH2 0xF7 JUMPI DUP1 PUSH4 0x86B714E2 EQ PUSH2 0x124 JUMPI JUMPDEST PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH2 0xBF PUSH2 0x54 CALLDATASIZE PUSH1 0x4 PUSH2 0x13B JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD DUP1 DUP3 ADD SWAP1 SWAP2 MSTORE PUSH1 0x0 DUP1 DUP3 MSTORE PUSH1 0x20 DUP3 ADD MSTORE POP PUSH1 0x0 SWAP1 DUP2 MSTORE PUSH1 0x20 DUP2 DUP2 MSTORE PUSH1 0x40 SWAP2 DUP3 SWAP1 KECCAK256 DUP3 MLOAD DUP1 DUP5 ADD SWAP1 SWAP4 MSTORE SLOAD PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF DUP2 AND DUP4 MSTORE PUSH21 0x10000000000000000000000000000000000000000 SWAP1 DIV PUSH1 0xFF AND ISZERO ISZERO SWAP1 DUP3 ADD MSTORE SWAP1 JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD DUP3 MLOAD PUSH20 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF AND DUP2 MSTORE PUSH1 0x20 SWAP3 DUP4 ADD MLOAD ISZERO ISZERO SWAP3 DUP2 ADD SWAP3 SWAP1 SWAP3 MSTORE ADD JUMPDEST PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH1 0x40 DUP1 MLOAD PUSH1 0x20 DUP1 DUP3 ADD DUP4 MSTORE PUSH1 0x0 SWAP1 SWAP2 MSTORE DUP2 MLOAD SWAP1 DUP2 ADD SWAP1 SWAP2 MSTORE PUSH1 0x1 SLOAD DUP2 MSTORE JUMPDEST PUSH1 0x40 MLOAD SWAP1 MLOAD DUP2 MSTORE PUSH1 0x20 ADD PUSH2 0xEE JUMP JUMPDEST PUSH1 0x40 DUP1 MLOAD PUSH1 0x20 DUP2 ADD SWAP1 SWAP2 MSTORE PUSH1 0x1 SLOAD DUP2 MSTORE PUSH2 0x115 SWAP1 DUP2 JUMP JUMPDEST PUSH1 0x0 PUSH1 0x20 DUP3 DUP5 SUB SLT ISZERO PUSH2 0x14C JUMPI DUP1 DUP2 REVERT JUMPDEST POP CALLDATALOAD SWAP2 SWAP1 POP JUMP INVALID LOG1 PUSH5 0x736F6C6343 STOP ADDMOD SUB STOP EXP ",
+              "sourceMap": "93:766:0:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;618:114;;;;;;:::i;:::-;-1:-1:-1;;;;;;;;;;;;;;;;;;713:1:0;:14;;;;;;;;;;;;706:21;;;;;;;;;;;;;;;;;;;;;;;;;;618:114;;;;;421:13:2;;436:42;417:62;399:81;;550:4;538:17;;;532:24;525:32;518:40;496:20;;;489:70;;;;372:18;618:114:0;;;;;;;;736:120;-1:-1:-1;;;;;;;;;;;;;828:23:0;;;;;;;;835:16;828:23;;;736:120;;;794:13:2;;776:32;;764:2;749:18;736:120:0;731:83:2;121:36:0;;;;;;;;;;;;;;;;;;14:190:2;;126:2;114:9;105:7;101:23;97:32;94:2;;;147:6;139;132:22;94:2;-1:-1:-1;175:23:2;;84:120;-1:-1:-1;84:120:2:o"
+            },
+            "methodIdentifiers": {
+              "planets(uint256)": "26c1e750",
+              "s()": "86b714e2",
+              "snarkConstants()": "51baf19e"
+            }
+          }
+        }
+      },
+      "contracts/DarkForestUtils.sol": {
+        "DarkForestUtils": {
+          "abi": [],
+          "evm": {
+            "bytecode": {
+              "generatedSources": [],
+              "linkReferences": {},
+              "object": "6059610038600b82828239805160001a607314602b57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063630cf433146038575b600080fd5b600160405190815260200160405180910390f3fea164736f6c6343000803000a",
+              "opcodes": "PUSH1 0x59 PUSH2 0x38 PUSH1 0xB DUP3 DUP3 DUP3 CODECOPY DUP1 MLOAD PUSH1 0x0 BYTE PUSH1 0x73 EQ PUSH1 0x2B JUMPI PUSH4 0x4E487B71 PUSH1 0xE0 SHL PUSH1 0x0 MSTORE PUSH1 0x0 PUSH1 0x4 MSTORE PUSH1 0x24 PUSH1 0x0 REVERT JUMPDEST ADDRESS PUSH1 0x0 MSTORE PUSH1 0x73 DUP2 MSTORE8 DUP3 DUP2 RETURN INVALID PUSH20 0x0 ADDRESS EQ PUSH1 0x80 PUSH1 0x40 MSTORE PUSH1 0x4 CALLDATASIZE LT PUSH1 0x33 JUMPI PUSH1 0x0 CALLDATALOAD PUSH1 0xE0 SHR DUP1 PUSH4 0x630CF433 EQ PUSH1 0x38 JUMPI JUMPDEST PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x1 PUSH1 0x40 MLOAD SWAP1 DUP2 MSTORE PUSH1 0x20 ADD PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN INVALID LOG1 PUSH5 0x736F6C6343 STOP ADDMOD SUB STOP EXP ",
+              "sourceMap": "0:434:1:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;0:434:1;;;;;;;;;;;;;;;;;"
+            },
+            "deployedBytecode": {
+              "generatedSources": [
+                {
+                  "ast": {
+                    "nodeType": "YulBlock",
+                    "src": "0:229:2",
+                    "statements": [
+                      {
+                        "nodeType": "YulBlock",
+                        "src": "6:3:2",
+                        "statements": []
+                      },
+                      {
+                        "body": {
+                          "nodeType": "YulBlock",
+                          "src": "151:76:2",
+                          "statements": [
+                            {
+                              "nodeType": "YulAssignment",
+                              "src": "161:26:2",
+                              "value": {
+                                "arguments": [
+                                  {
+                                    "name": "headStart",
+                                    "nodeType": "YulIdentifier",
+                                    "src": "173:9:2"
+                                  },
+                                  {
+                                    "kind": "number",
+                                    "nodeType": "YulLiteral",
+                                    "src": "184:2:2",
+                                    "type": "",
+                                    "value": "32"
+                                  }
+                                ],
+                                "functionName": {
+                                  "name": "add",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "169:3:2"
+                                },
+                                "nodeType": "YulFunctionCall",
+                                "src": "169:18:2"
+                              },
+                              "variableNames": [
+                                {
+                                  "name": "tail",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "161:4:2"
+                                }
+                              ]
+                            },
+                            {
+                              "expression": {
+                                "arguments": [
+                                  {
+                                    "name": "headStart",
+                                    "nodeType": "YulIdentifier",
+                                    "src": "203:9:2"
+                                  },
+                                  {
+                                    "name": "value0",
+                                    "nodeType": "YulIdentifier",
+                                    "src": "214:6:2"
+                                  }
+                                ],
+                                "functionName": {
+                                  "name": "mstore",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "196:6:2"
+                                },
+                                "nodeType": "YulFunctionCall",
+                                "src": "196:25:2"
+                              },
+                              "nodeType": "YulExpressionStatement",
+                              "src": "196:25:2"
+                            }
+                          ]
+                        },
+                        "name": "abi_encode_tuple_t_struct$_GameStorage_$86_storage_ptr__to_t_uint256__fromStack_library_reversed",
+                        "nodeType": "YulFunctionDefinition",
+                        "parameters": [
+                          {
+                            "name": "headStart",
+                            "nodeType": "YulTypedName",
+                            "src": "120:9:2",
+                            "type": ""
+                          },
+                          {
+                            "name": "value0",
+                            "nodeType": "YulTypedName",
+                            "src": "131:6:2",
+                            "type": ""
+                          }
+                        ],
+                        "returnVariables": [
+                          {
+                            "name": "tail",
+                            "nodeType": "YulTypedName",
+                            "src": "142:4:2",
+                            "type": ""
+                          }
+                        ],
+                        "src": "14:213:2"
+                      }
+                    ]
+                  },
+                  "contents": "{\n    { }\n    function abi_encode_tuple_t_struct$_GameStorage_$86_storage_ptr__to_t_uint256__fromStack_library_reversed(headStart, value0) -> tail\n    {\n        tail := add(headStart, 32)\n        mstore(headStart, value0)\n    }\n}",
+                  "id": 2,
+                  "language": "Yul",
+                  "name": "#utility.yul"
+                }
+              ],
+              "immutableReferences": {},
+              "linkReferences": {},
+              "object": "730000000000000000000000000000000000000000301460806040526004361060335760003560e01c8063630cf433146038575b600080fd5b600160405190815260200160405180910390f3fea164736f6c6343000803000a",
+              "opcodes": "PUSH20 0x0 ADDRESS EQ PUSH1 0x80 PUSH1 0x40 MSTORE PUSH1 0x4 CALLDATASIZE LT PUSH1 0x33 JUMPI PUSH1 0x0 CALLDATALOAD PUSH1 0xE0 SHR DUP1 PUSH4 0x630CF433 EQ PUSH1 0x38 JUMPI JUMPDEST PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH1 0x1 PUSH1 0x40 MLOAD SWAP1 DUP2 MSTORE PUSH1 0x20 ADD PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN INVALID LOG1 PUSH5 0x736F6C6343 STOP ADDMOD SUB STOP EXP ",
+              "sourceMap": "0:434:1:-:0;;;;;;;;;;;;;;;;;;;;;;;;255:177;368:1;255:177;;196:25:2;;;184:2;169:18;255:177:1;;;;;;"
+            },
+            "methodIdentifiers": {
+              "getGameStorage()": "630cf433"
+            }
+          }
+        }
+      }
+    },
+    "errors": [
+      {
+        "component": "general",
+        "errorCode": "1878",
+        "formattedMessage": "Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing \"SPDX-License-Identifier: <SPDX-License>\" to each source file. Use \"SPDX-License-Identifier: UNLICENSED\" for non-open-source code. Please see https://spdx.org for more information.\n--> contracts/DarkForestCore.sol\n\n",
+        "message": "SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing \"SPDX-License-Identifier: <SPDX-License>\" to each source file. Use \"SPDX-License-Identifier: UNLICENSED\" for non-open-source code. Please see https://spdx.org for more information.",
+        "severity": "warning",
+        "sourceLocation": {
+          "end": -1,
+          "file": "contracts/DarkForestCore.sol",
+          "start": -1
+        },
+        "type": "Warning"
+      },
+      {
+        "component": "general",
+        "errorCode": "1878",
+        "formattedMessage": "Warning: SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing \"SPDX-License-Identifier: <SPDX-License>\" to each source file. Use \"SPDX-License-Identifier: UNLICENSED\" for non-open-source code. Please see https://spdx.org for more information.\n--> contracts/DarkForestUtils.sol\n\n",
+        "message": "SPDX license identifier not provided in source file. Before publishing, consider adding a comment containing \"SPDX-License-Identifier: <SPDX-License>\" to each source file. Use \"SPDX-License-Identifier: UNLICENSED\" for non-open-source code. Please see https://spdx.org for more information.",
+        "severity": "warning",
+        "sourceLocation": {
+          "end": -1,
+          "file": "contracts/DarkForestUtils.sol",
+          "start": -1
+        },
+        "type": "Warning"
+      },
+      {
+        "component": "general",
+        "errorCode": "3420",
+        "formattedMessage": "Warning: Source file does not specify required compiler version! Consider adding \"pragma solidity ^0.8.3;\"\n--> contracts/DarkForestUtils.sol\n\n",
+        "message": "Source file does not specify required compiler version! Consider adding \"pragma solidity ^0.8.3;\"",
+        "severity": "warning",
+        "sourceLocation": {
+          "end": -1,
+          "file": "contracts/DarkForestUtils.sol",
+          "start": -1
+        },
+        "type": "Warning"
+      },
+      {
+        "component": "general",
+        "errorCode": "2462",
+        "formattedMessage": "Warning: Visibility for constructor is ignored. If you want the contract to be non-deployable, making it \"abstract\" is sufficient.\n --> contracts/DarkForestCore.sol:9:3:\n  |\n9 |   constructor() public {\n  |   ^ (Relevant source part starts here and spans across multiple lines).\n\n",
+        "message": "Visibility for constructor is ignored. If you want the contract to be non-deployable, making it \"abstract\" is sufficient.",
+        "severity": "warning",
+        "sourceLocation": {
+          "end": 614,
+          "file": "contracts/DarkForestCore.sol",
+          "start": 162
+        },
+        "type": "Warning"
+      }
+    ],
+    "sources": {
+      "contracts/DarkForestCore.sol": {
+        "ast": {
+          "absolutePath": "contracts/DarkForestCore.sol",
+          "exportedSymbols": {
+            "DarkForestCore": [
+              68
+            ],
+            "DarkForestUtils": [
+              105
+            ]
+          },
+          "id": 69,
+          "nodeType": "SourceUnit",
+          "nodes": [
+            {
+              "id": 1,
+              "literals": [
+                "solidity",
+                ">=",
+                "0.7",
+                ".6"
+              ],
+              "nodeType": "PragmaDirective",
+              "src": "0:24:0"
+            },
+            {
+              "id": 2,
+              "literals": [
+                "experimental",
+                "ABIEncoderV2"
+              ],
+              "nodeType": "PragmaDirective",
+              "src": "25:33:0"
+            },
+            {
+              "absolutePath": "contracts/DarkForestUtils.sol",
+              "file": "./DarkForestUtils.sol",
+              "id": 3,
+              "nameLocation": "-1:-1:-1",
+              "nodeType": "ImportDirective",
+              "scope": 69,
+              "sourceUnit": 106,
+              "src": "60:31:0",
+              "symbolAliases": [],
+              "unitAlias": ""
+            },
+            {
+              "abstract": false,
+              "baseContracts": [],
+              "contractDependencies": [],
+              "contractKind": "contract",
+              "fullyImplemented": true,
+              "id": 68,
+              "linearizedBaseContracts": [
+                68
+              ],
+              "name": "DarkForestCore",
+              "nameLocation": "102:14:0",
+              "nodeType": "ContractDefinition",
+              "nodes": [
+                {
+                  "constant": false,
+                  "functionSelector": "86b714e2",
+                  "id": 6,
+                  "mutability": "mutable",
+                  "name": "s",
+                  "nameLocation": "156:1:0",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 68,
+                  "src": "121:36:0",
+                  "stateVariable": true,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_GameStorage_$86_storage",
+                    "typeString": "struct DarkForestUtils.GameStorage"
+                  },
+                  "typeName": {
+                    "id": 5,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 4,
+                      "name": "DarkForestUtils.GameStorage",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 86,
+                      "src": "121:27:0"
+                    },
+                    "referencedDeclaration": 86,
+                    "src": "121:27:0",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_GameStorage_$86_storage_ptr",
+                      "typeString": "struct DarkForestUtils.GameStorage"
+                    }
+                  },
+                  "visibility": "public"
+                },
+                {
+                  "body": {
+                    "id": 42,
+                    "nodeType": "Block",
+                    "src": "183:431:0",
+                    "statements": [
+                      {
+                        "assignments": [
+                          13
+                        ],
+                        "declarations": [
+                          {
+                            "constant": false,
+                            "id": 13,
+                            "mutability": "mutable",
+                            "name": "planet",
+                            "nameLocation": "219:6:0",
+                            "nodeType": "VariableDeclaration",
+                            "scope": 42,
+                            "src": "189:36:0",
+                            "stateVariable": false,
+                            "storageLocation": "memory",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Planet_$74_memory_ptr",
+                              "typeString": "struct DarkForestUtils.Planet"
+                            },
+                            "typeName": {
+                              "id": 12,
+                              "nodeType": "UserDefinedTypeName",
+                              "pathNode": {
+                                "id": 11,
+                                "name": "DarkForestUtils.Planet",
+                                "nodeType": "IdentifierPath",
+                                "referencedDeclaration": 74,
+                                "src": "189:22:0"
+                              },
+                              "referencedDeclaration": 74,
+                              "src": "189:22:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_struct$_Planet_$74_storage_ptr",
+                                "typeString": "struct DarkForestUtils.Planet"
+                              }
+                            },
+                            "visibility": "internal"
+                          }
+                        ],
+                        "id": 20,
+                        "initialValue": {
+                          "arguments": [
+                            {
+                              "expression": {
+                                "id": 16,
+                                "name": "msg",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": -15,
+                                "src": "266:3:0",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_magic_message",
+                                  "typeString": "msg"
+                                }
+                              },
+                              "id": 17,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": false,
+                              "lValueRequested": false,
+                              "memberName": "sender",
+                              "nodeType": "MemberAccess",
+                              "src": "266:10:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              }
+                            },
+                            {
+                              "hexValue": "74727565",
+                              "id": 18,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "kind": "bool",
+                              "lValueRequested": false,
+                              "nodeType": "Literal",
+                              "src": "298:4:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_bool",
+                                "typeString": "bool"
+                              },
+                              "value": "true"
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_address",
+                                "typeString": "address"
+                              },
+                              {
+                                "typeIdentifier": "t_bool",
+                                "typeString": "bool"
+                              }
+                            ],
+                            "expression": {
+                              "id": 14,
+                              "name": "DarkForestUtils",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 105,
+                              "src": "228:15:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_contract$_DarkForestUtils_$105_$",
+                                "typeString": "type(library DarkForestUtils)"
+                              }
+                            },
+                            "id": 15,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "memberName": "Planet",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 74,
+                            "src": "228:22:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_struct$_Planet_$74_storage_ptr_$",
+                              "typeString": "type(struct DarkForestUtils.Planet storage pointer)"
+                            }
+                          },
+                          "id": 19,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "kind": "structConstructorCall",
+                          "lValueRequested": false,
+                          "names": [
+                            "owner",
+                            "isHomePlanet"
+                          ],
+                          "nodeType": "FunctionCall",
+                          "src": "228:81:0",
+                          "tryCall": false,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Planet_$74_memory_ptr",
+                            "typeString": "struct DarkForestUtils.Planet memory"
+                          }
+                        },
+                        "nodeType": "VariableDeclarationStatement",
+                        "src": "189:120:0"
+                      },
+                      {
+                        "assignments": [
+                          22
+                        ],
+                        "declarations": [
+                          {
+                            "constant": false,
+                            "id": 22,
+                            "mutability": "mutable",
+                            "name": "location",
+                            "nameLocation": "324:8:0",
+                            "nodeType": "VariableDeclaration",
+                            "scope": 42,
+                            "src": "316:16:0",
+                            "stateVariable": false,
+                            "storageLocation": "default",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            },
+                            "typeName": {
+                              "id": 21,
+                              "name": "uint256",
+                              "nodeType": "ElementaryTypeName",
+                              "src": "316:7:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            },
+                            "visibility": "internal"
+                          }
+                        ],
+                        "id": 24,
+                        "initialValue": {
+                          "hexValue": "35323238353330383732303030333838363437383136343633323835383630383730343131393735383738323039383032363131363133363131393633303034373932393134383234303734",
+                          "id": 23,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "335:76:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_5228530872000388647816463285860870411975878209802611613611963004792914824074_by_1",
+                            "typeString": "int_const 5228...(68 digits omitted)...4074"
+                          },
+                          "value": "5228530872000388647816463285860870411975878209802611613611963004792914824074"
+                        },
+                        "nodeType": "VariableDeclarationStatement",
+                        "src": "316:95:0"
+                      },
+                      {
+                        "expression": {
+                          "id": 31,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftHandSide": {
+                            "baseExpression": {
+                              "expression": {
+                                "id": 25,
+                                "name": "s",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 6,
+                                "src": "417:1:0",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_struct$_GameStorage_$86_storage",
+                                  "typeString": "struct DarkForestUtils.GameStorage storage ref"
+                                }
+                              },
+                              "id": 28,
+                              "isConstant": false,
+                              "isLValue": true,
+                              "isPure": false,
+                              "lValueRequested": false,
+                              "memberName": "planets",
+                              "nodeType": "MemberAccess",
+                              "referencedDeclaration": 82,
+                              "src": "417:9:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Planet_$74_storage_$",
+                                "typeString": "mapping(uint256 => struct DarkForestUtils.Planet storage ref)"
+                              }
+                            },
+                            "id": 29,
+                            "indexExpression": {
+                              "id": 27,
+                              "name": "location",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 22,
+                              "src": "427:8:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            },
+                            "isConstant": false,
+                            "isLValue": true,
+                            "isPure": false,
+                            "lValueRequested": true,
+                            "nodeType": "IndexAccess",
+                            "src": "417:19:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Planet_$74_storage",
+                              "typeString": "struct DarkForestUtils.Planet storage ref"
+                            }
+                          },
+                          "nodeType": "Assignment",
+                          "operator": "=",
+                          "rightHandSide": {
+                            "id": 30,
+                            "name": "planet",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 13,
+                            "src": "439:6:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_Planet_$74_memory_ptr",
+                              "typeString": "struct DarkForestUtils.Planet memory"
+                            }
+                          },
+                          "src": "417:28:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Planet_$74_storage",
+                            "typeString": "struct DarkForestUtils.Planet storage ref"
+                          }
+                        },
+                        "id": 32,
+                        "nodeType": "ExpressionStatement",
+                        "src": "417:28:0"
+                      },
+                      {
+                        "expression": {
+                          "id": 40,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftHandSide": {
+                            "expression": {
+                              "id": 33,
+                              "name": "s",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 6,
+                              "src": "452:1:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_struct$_GameStorage_$86_storage",
+                                "typeString": "struct DarkForestUtils.GameStorage storage ref"
+                              }
+                            },
+                            "id": 35,
+                            "isConstant": false,
+                            "isLValue": true,
+                            "isPure": false,
+                            "lValueRequested": true,
+                            "memberName": "snarkConstants",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 85,
+                            "src": "452:16:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_SnarkConstants_$77_storage",
+                              "typeString": "struct DarkForestUtils.SnarkConstants storage ref"
+                            }
+                          },
+                          "nodeType": "Assignment",
+                          "operator": "=",
+                          "rightHandSide": {
+                            "arguments": [
+                              {
+                                "hexValue": "32313439323532363431323638363734383834333433383538353534303931383433393237303935393933353230343030333532333530303730383338323239323638313031373630343731",
+                                "id": 38,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": true,
+                                "kind": "number",
+                                "lValueRequested": false,
+                                "nodeType": "Literal",
+                                "src": "526:76:0",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_rational_2149252641268674884343858554091843927095993520400352350070838229268101760471_by_1",
+                                  "typeString": "int_const 2149...(68 digits omitted)...0471"
+                                },
+                                "value": "2149252641268674884343858554091843927095993520400352350070838229268101760471"
+                              }
+                            ],
+                            "expression": {
+                              "argumentTypes": [
+                                {
+                                  "typeIdentifier": "t_rational_2149252641268674884343858554091843927095993520400352350070838229268101760471_by_1",
+                                  "typeString": "int_const 2149...(68 digits omitted)...0471"
+                                }
+                              ],
+                              "expression": {
+                                "id": 36,
+                                "name": "DarkForestUtils",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 105,
+                                "src": "471:15:0",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_type$_t_contract$_DarkForestUtils_$105_$",
+                                  "typeString": "type(library DarkForestUtils)"
+                                }
+                              },
+                              "id": 37,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": false,
+                              "lValueRequested": false,
+                              "memberName": "SnarkConstants",
+                              "nodeType": "MemberAccess",
+                              "referencedDeclaration": 77,
+                              "src": "471:30:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_type$_t_struct$_SnarkConstants_$77_storage_ptr_$",
+                                "typeString": "type(struct DarkForestUtils.SnarkConstants storage pointer)"
+                              }
+                            },
+                            "id": 39,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "structConstructorCall",
+                            "lValueRequested": false,
+                            "names": [
+                              "PLANETHASH_KEY"
+                            ],
+                            "nodeType": "FunctionCall",
+                            "src": "471:138:0",
+                            "tryCall": false,
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_SnarkConstants_$77_memory_ptr",
+                              "typeString": "struct DarkForestUtils.SnarkConstants memory"
+                            }
+                          },
+                          "src": "452:157:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_SnarkConstants_$77_storage",
+                            "typeString": "struct DarkForestUtils.SnarkConstants storage ref"
+                          }
+                        },
+                        "id": 41,
+                        "nodeType": "ExpressionStatement",
+                        "src": "452:157:0"
+                      }
+                    ]
+                  },
+                  "id": 43,
+                  "implemented": true,
+                  "kind": "constructor",
+                  "modifiers": [],
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "FunctionDefinition",
+                  "parameters": {
+                    "id": 7,
+                    "nodeType": "ParameterList",
+                    "parameters": [],
+                    "src": "173:2:0"
+                  },
+                  "returnParameters": {
+                    "id": 8,
+                    "nodeType": "ParameterList",
+                    "parameters": [],
+                    "src": "183:0:0"
+                  },
+                  "scope": 68,
+                  "src": "162:452:0",
+                  "stateMutability": "nonpayable",
+                  "virtual": false,
+                  "visibility": "public"
+                },
+                {
+                  "body": {
+                    "id": 56,
+                    "nodeType": "Block",
+                    "src": "700:32:0",
+                    "statements": [
+                      {
+                        "expression": {
+                          "baseExpression": {
+                            "expression": {
+                              "id": 51,
+                              "name": "s",
+                              "nodeType": "Identifier",
+                              "overloadedDeclarations": [],
+                              "referencedDeclaration": 6,
+                              "src": "713:1:0",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_struct$_GameStorage_$86_storage",
+                                "typeString": "struct DarkForestUtils.GameStorage storage ref"
+                              }
+                            },
+                            "id": 52,
+                            "isConstant": false,
+                            "isLValue": true,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "memberName": "planets",
+                            "nodeType": "MemberAccess",
+                            "referencedDeclaration": 82,
+                            "src": "713:9:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Planet_$74_storage_$",
+                              "typeString": "mapping(uint256 => struct DarkForestUtils.Planet storage ref)"
+                            }
+                          },
+                          "id": 54,
+                          "indexExpression": {
+                            "id": 53,
+                            "name": "key",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 45,
+                            "src": "723:3:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          },
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "nodeType": "IndexAccess",
+                          "src": "713:14:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Planet_$74_storage",
+                            "typeString": "struct DarkForestUtils.Planet storage ref"
+                          }
+                        },
+                        "functionReturnParameters": 50,
+                        "id": 55,
+                        "nodeType": "Return",
+                        "src": "706:21:0"
+                      }
+                    ]
+                  },
+                  "functionSelector": "26c1e750",
+                  "id": 57,
+                  "implemented": true,
+                  "kind": "function",
+                  "modifiers": [],
+                  "name": "planets",
+                  "nameLocation": "627:7:0",
+                  "nodeType": "FunctionDefinition",
+                  "parameters": {
+                    "id": 46,
+                    "nodeType": "ParameterList",
+                    "parameters": [
+                      {
+                        "constant": false,
+                        "id": 45,
+                        "mutability": "mutable",
+                        "name": "key",
+                        "nameLocation": "643:3:0",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 57,
+                        "src": "635:11:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "typeName": {
+                          "id": 44,
+                          "name": "uint256",
+                          "nodeType": "ElementaryTypeName",
+                          "src": "635:7:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "visibility": "internal"
+                      }
+                    ],
+                    "src": "634:13:0"
+                  },
+                  "returnParameters": {
+                    "id": 50,
+                    "nodeType": "ParameterList",
+                    "parameters": [
+                      {
+                        "constant": false,
+                        "id": 49,
+                        "mutability": "mutable",
+                        "name": "",
+                        "nameLocation": "-1:-1:-1",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 57,
+                        "src": "669:29:0",
+                        "stateVariable": false,
+                        "storageLocation": "memory",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_Planet_$74_memory_ptr",
+                          "typeString": "struct DarkForestUtils.Planet"
+                        },
+                        "typeName": {
+                          "id": 48,
+                          "nodeType": "UserDefinedTypeName",
+                          "pathNode": {
+                            "id": 47,
+                            "name": "DarkForestUtils.Planet",
+                            "nodeType": "IdentifierPath",
+                            "referencedDeclaration": 74,
+                            "src": "669:22:0"
+                          },
+                          "referencedDeclaration": 74,
+                          "src": "669:22:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Planet_$74_storage_ptr",
+                            "typeString": "struct DarkForestUtils.Planet"
+                          }
+                        },
+                        "visibility": "internal"
+                      }
+                    ],
+                    "src": "668:31:0"
+                  },
+                  "scope": 68,
+                  "src": "618:114:0",
+                  "stateMutability": "view",
+                  "virtual": false,
+                  "visibility": "public"
+                },
+                {
+                  "body": {
+                    "id": 66,
+                    "nodeType": "Block",
+                    "src": "822:34:0",
+                    "statements": [
+                      {
+                        "expression": {
+                          "expression": {
+                            "id": 63,
+                            "name": "s",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 6,
+                            "src": "835:1:0",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_struct$_GameStorage_$86_storage",
+                              "typeString": "struct DarkForestUtils.GameStorage storage ref"
+                            }
+                          },
+                          "id": 64,
+                          "isConstant": false,
+                          "isLValue": true,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "snarkConstants",
+                          "nodeType": "MemberAccess",
+                          "referencedDeclaration": 85,
+                          "src": "835:16:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_SnarkConstants_$77_storage",
+                            "typeString": "struct DarkForestUtils.SnarkConstants storage ref"
+                          }
+                        },
+                        "functionReturnParameters": 62,
+                        "id": 65,
+                        "nodeType": "Return",
+                        "src": "828:23:0"
+                      }
+                    ]
+                  },
+                  "functionSelector": "51baf19e",
+                  "id": 67,
+                  "implemented": true,
+                  "kind": "function",
+                  "modifiers": [],
+                  "name": "snarkConstants",
+                  "nameLocation": "745:14:0",
+                  "nodeType": "FunctionDefinition",
+                  "parameters": {
+                    "id": 58,
+                    "nodeType": "ParameterList",
+                    "parameters": [],
+                    "src": "759:2:0"
+                  },
+                  "returnParameters": {
+                    "id": 62,
+                    "nodeType": "ParameterList",
+                    "parameters": [
+                      {
+                        "constant": false,
+                        "id": 61,
+                        "mutability": "mutable",
+                        "name": "",
+                        "nameLocation": "-1:-1:-1",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 67,
+                        "src": "783:37:0",
+                        "stateVariable": false,
+                        "storageLocation": "memory",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_SnarkConstants_$77_memory_ptr",
+                          "typeString": "struct DarkForestUtils.SnarkConstants"
+                        },
+                        "typeName": {
+                          "id": 60,
+                          "nodeType": "UserDefinedTypeName",
+                          "pathNode": {
+                            "id": 59,
+                            "name": "DarkForestUtils.SnarkConstants",
+                            "nodeType": "IdentifierPath",
+                            "referencedDeclaration": 77,
+                            "src": "783:30:0"
+                          },
+                          "referencedDeclaration": 77,
+                          "src": "783:30:0",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_SnarkConstants_$77_storage_ptr",
+                            "typeString": "struct DarkForestUtils.SnarkConstants"
+                          }
+                        },
+                        "visibility": "internal"
+                      }
+                    ],
+                    "src": "782:39:0"
+                  },
+                  "scope": 68,
+                  "src": "736:120:0",
+                  "stateMutability": "view",
+                  "virtual": false,
+                  "visibility": "public"
+                }
+              ],
+              "scope": 69,
+              "src": "93:766:0"
+            }
+          ],
+          "src": "0:860:0"
+        },
+        "id": 0
+      },
+      "contracts/DarkForestUtils.sol": {
+        "ast": {
+          "absolutePath": "contracts/DarkForestUtils.sol",
+          "exportedSymbols": {
+            "DarkForestUtils": [
+              105
+            ]
+          },
+          "id": 106,
+          "nodeType": "SourceUnit",
+          "nodes": [
+            {
+              "abstract": false,
+              "baseContracts": [],
+              "contractDependencies": [],
+              "contractKind": "library",
+              "fullyImplemented": true,
+              "id": 105,
+              "linearizedBaseContracts": [
+                105
+              ],
+              "name": "DarkForestUtils",
+              "nameLocation": "8:15:1",
+              "nodeType": "ContractDefinition",
+              "nodes": [
+                {
+                  "canonicalName": "DarkForestUtils.Planet",
+                  "id": 74,
+                  "members": [
+                    {
+                      "constant": false,
+                      "id": 71,
+                      "mutability": "mutable",
+                      "name": "owner",
+                      "nameLocation": "56:5:1",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 74,
+                      "src": "48:13:1",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      },
+                      "typeName": {
+                        "id": 70,
+                        "name": "address",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "48:7:1",
+                        "stateMutability": "nonpayable",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "visibility": "internal"
+                    },
+                    {
+                      "constant": false,
+                      "id": 73,
+                      "mutability": "mutable",
+                      "name": "isHomePlanet",
+                      "nameLocation": "72:12:1",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 74,
+                      "src": "67:17:1",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      },
+                      "typeName": {
+                        "id": 72,
+                        "name": "bool",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "67:4:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "name": "Planet",
+                  "nameLocation": "35:6:1",
+                  "nodeType": "StructDefinition",
+                  "scope": 105,
+                  "src": "28:61:1",
+                  "visibility": "public"
+                },
+                {
+                  "canonicalName": "DarkForestUtils.SnarkConstants",
+                  "id": 77,
+                  "members": [
+                    {
+                      "constant": false,
+                      "id": 76,
+                      "mutability": "mutable",
+                      "name": "PLANETHASH_KEY",
+                      "nameLocation": "129:14:1",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 77,
+                      "src": "121:22:1",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      },
+                      "typeName": {
+                        "id": 75,
+                        "name": "uint256",
+                        "nodeType": "ElementaryTypeName",
+                        "src": "121:7:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "name": "SnarkConstants",
+                  "nameLocation": "100:14:1",
+                  "nodeType": "StructDefinition",
+                  "scope": 105,
+                  "src": "93:55:1",
+                  "visibility": "public"
+                },
+                {
+                  "canonicalName": "DarkForestUtils.GameStorage",
+                  "id": 86,
+                  "members": [
+                    {
+                      "constant": false,
+                      "id": 82,
+                      "mutability": "mutable",
+                      "name": "planets",
+                      "nameLocation": "204:7:1",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 86,
+                      "src": "177:34:1",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Planet_$74_storage_$",
+                        "typeString": "mapping(uint256 => struct DarkForestUtils.Planet)"
+                      },
+                      "typeName": {
+                        "id": 81,
+                        "keyType": {
+                          "id": 78,
+                          "name": "uint256",
+                          "nodeType": "ElementaryTypeName",
+                          "src": "185:7:1",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "Mapping",
+                        "src": "177:26:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_uint256_$_t_struct$_Planet_$74_storage_$",
+                          "typeString": "mapping(uint256 => struct DarkForestUtils.Planet)"
+                        },
+                        "valueType": {
+                          "id": 80,
+                          "nodeType": "UserDefinedTypeName",
+                          "pathNode": {
+                            "id": 79,
+                            "name": "Planet",
+                            "nodeType": "IdentifierPath",
+                            "referencedDeclaration": 74,
+                            "src": "196:6:1"
+                          },
+                          "referencedDeclaration": 74,
+                          "src": "196:6:1",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_Planet_$74_storage_ptr",
+                            "typeString": "struct DarkForestUtils.Planet"
+                          }
+                        }
+                      },
+                      "visibility": "internal"
+                    },
+                    {
+                      "constant": false,
+                      "id": 85,
+                      "mutability": "mutable",
+                      "name": "snarkConstants",
+                      "nameLocation": "232:14:1",
+                      "nodeType": "VariableDeclaration",
+                      "scope": 86,
+                      "src": "217:29:1",
+                      "stateVariable": false,
+                      "storageLocation": "default",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_struct$_SnarkConstants_$77_storage_ptr",
+                        "typeString": "struct DarkForestUtils.SnarkConstants"
+                      },
+                      "typeName": {
+                        "id": 84,
+                        "nodeType": "UserDefinedTypeName",
+                        "pathNode": {
+                          "id": 83,
+                          "name": "SnarkConstants",
+                          "nodeType": "IdentifierPath",
+                          "referencedDeclaration": 77,
+                          "src": "217:14:1"
+                        },
+                        "referencedDeclaration": 77,
+                        "src": "217:14:1",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_SnarkConstants_$77_storage_ptr",
+                          "typeString": "struct DarkForestUtils.SnarkConstants"
+                        }
+                      },
+                      "visibility": "internal"
+                    }
+                  ],
+                  "name": "GameStorage",
+                  "nameLocation": "159:11:1",
+                  "nodeType": "StructDefinition",
+                  "scope": 105,
+                  "src": "152:99:1",
+                  "visibility": "public"
+                },
+                {
+                  "body": {
+                    "id": 103,
+                    "nodeType": "Block",
+                    "src": "327:105:1",
+                    "statements": [
+                      {
+                        "assignments": [
+                          93
+                        ],
+                        "declarations": [
+                          {
+                            "constant": false,
+                            "id": 93,
+                            "mutability": "mutable",
+                            "name": "position",
+                            "nameLocation": "341:8:1",
+                            "nodeType": "VariableDeclaration",
+                            "scope": 103,
+                            "src": "333:16:1",
+                            "stateVariable": false,
+                            "storageLocation": "default",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_bytes32",
+                              "typeString": "bytes32"
+                            },
+                            "typeName": {
+                              "id": 92,
+                              "name": "bytes32",
+                              "nodeType": "ElementaryTypeName",
+                              "src": "333:7:1",
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_bytes32",
+                                "typeString": "bytes32"
+                              }
+                            },
+                            "visibility": "internal"
+                          }
+                        ],
+                        "id": 101,
+                        "initialValue": {
+                          "arguments": [
+                            {
+                              "arguments": [
+                                {
+                                  "hexValue": "31",
+                                  "id": 98,
+                                  "isConstant": false,
+                                  "isLValue": false,
+                                  "isPure": true,
+                                  "kind": "number",
+                                  "lValueRequested": false,
+                                  "nodeType": "Literal",
+                                  "src": "368:1:1",
+                                  "typeDescriptions": {
+                                    "typeIdentifier": "t_rational_1_by_1",
+                                    "typeString": "int_const 1"
+                                  },
+                                  "value": "1"
+                                }
+                              ],
+                              "expression": {
+                                "argumentTypes": [
+                                  {
+                                    "typeIdentifier": "t_rational_1_by_1",
+                                    "typeString": "int_const 1"
+                                  }
+                                ],
+                                "id": 97,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": true,
+                                "lValueRequested": false,
+                                "nodeType": "ElementaryTypeNameExpression",
+                                "src": "360:7:1",
+                                "typeDescriptions": {
+                                  "typeIdentifier": "t_type$_t_uint256_$",
+                                  "typeString": "type(uint256)"
+                                },
+                                "typeName": {
+                                  "id": 96,
+                                  "name": "uint256",
+                                  "nodeType": "ElementaryTypeName",
+                                  "src": "360:7:1",
+                                  "typeDescriptions": {}
+                                }
+                              },
+                              "id": 99,
+                              "isConstant": false,
+                              "isLValue": false,
+                              "isPure": true,
+                              "kind": "typeConversion",
+                              "lValueRequested": false,
+                              "names": [],
+                              "nodeType": "FunctionCall",
+                              "src": "360:10:1",
+                              "tryCall": false,
+                              "typeDescriptions": {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            }
+                          ],
+                          "expression": {
+                            "argumentTypes": [
+                              {
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                              }
+                            ],
+                            "id": 95,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "lValueRequested": false,
+                            "nodeType": "ElementaryTypeNameExpression",
+                            "src": "352:7:1",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_type$_t_bytes32_$",
+                              "typeString": "type(bytes32)"
+                            },
+                            "typeName": {
+                              "id": 94,
+                              "name": "bytes32",
+                              "nodeType": "ElementaryTypeName",
+                              "src": "352:7:1",
+                              "typeDescriptions": {}
+                            }
+                          },
+                          "id": 100,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "typeConversion",
+                          "lValueRequested": false,
+                          "names": [],
+                          "nodeType": "FunctionCall",
+                          "src": "352:19:1",
+                          "tryCall": false,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bytes32",
+                            "typeString": "bytes32"
+                          }
+                        },
+                        "nodeType": "VariableDeclarationStatement",
+                        "src": "333:38:1"
+                      },
+                      {
+                        "AST": {
+                          "nodeType": "YulBlock",
+                          "src": "388:40:1",
+                          "statements": [
+                            {
+                              "nodeType": "YulAssignment",
+                              "src": "400:20:1",
+                              "value": {
+                                "name": "position",
+                                "nodeType": "YulIdentifier",
+                                "src": "412:8:1"
+                              },
+                              "variableNames": [
+                                {
+                                  "name": "ret.slot",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "400:8:1"
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        "evmVersion": "istanbul",
+                        "externalReferences": [
+                          {
+                            "declaration": 93,
+                            "isOffset": false,
+                            "isSlot": false,
+                            "src": "412:8:1",
+                            "valueSize": 1
+                          },
+                          {
+                            "declaration": 90,
+                            "isOffset": false,
+                            "isSlot": true,
+                            "src": "400:8:1",
+                            "suffix": "slot",
+                            "valueSize": 1
+                          }
+                        ],
+                        "id": 102,
+                        "nodeType": "InlineAssembly",
+                        "src": "379:49:1"
+                      }
+                    ]
+                  },
+                  "functionSelector": "630cf433",
+                  "id": 104,
+                  "implemented": true,
+                  "kind": "function",
+                  "modifiers": [],
+                  "name": "getGameStorage",
+                  "nameLocation": "264:14:1",
+                  "nodeType": "FunctionDefinition",
+                  "parameters": {
+                    "id": 87,
+                    "nodeType": "ParameterList",
+                    "parameters": [],
+                    "src": "278:2:1"
+                  },
+                  "returnParameters": {
+                    "id": 91,
+                    "nodeType": "ParameterList",
+                    "parameters": [
+                      {
+                        "constant": false,
+                        "id": 90,
+                        "mutability": "mutable",
+                        "name": "ret",
+                        "nameLocation": "322:3:1",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 104,
+                        "src": "302:23:1",
+                        "stateVariable": false,
+                        "storageLocation": "storage",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_struct$_GameStorage_$86_storage_ptr",
+                          "typeString": "struct DarkForestUtils.GameStorage"
+                        },
+                        "typeName": {
+                          "id": 89,
+                          "nodeType": "UserDefinedTypeName",
+                          "pathNode": {
+                            "id": 88,
+                            "name": "GameStorage",
+                            "nodeType": "IdentifierPath",
+                            "referencedDeclaration": 86,
+                            "src": "302:11:1"
+                          },
+                          "referencedDeclaration": 86,
+                          "src": "302:11:1",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_struct$_GameStorage_$86_storage_ptr",
+                            "typeString": "struct DarkForestUtils.GameStorage"
+                          }
+                        },
+                        "visibility": "internal"
+                      }
+                    ],
+                    "src": "301:25:1"
+                  },
+                  "scope": 105,
+                  "src": "255:177:1",
+                  "stateMutability": "pure",
+                  "virtual": false,
+                  "visibility": "public"
+                }
+              ],
+              "scope": 106,
+              "src": "0:434:1"
+            }
+          ],
+          "src": "0:435:1"
+        },
+        "id": 1
+      }
+    }
+  }
+}

@@ -9,6 +9,7 @@ import { mimc7 } from 'circomlib';
 import bigInt from 'big-integer';
 import { BigInteger } from 'big-integer';
 
+import { pedersen, computeSharedKey, genSharedKey, genKeypair } from './signature';
 import { get, post } from './api';
 import { Snark, Stark, Ciphertext, ZKTypes } from '../types';
 import {
@@ -23,8 +24,6 @@ import {
 } from './prover';
 
 import config from '../../config';
-const STARKWARE_APP = config.starkwareApp;
-
 
 function serializeUrl(url: string) {
   const part1 = url.slice(0, url.length / 2);
@@ -54,12 +53,7 @@ const modPBigIntNative = (x: BigInteger) => {
 
 async function pedersenHash(x: BigInt, y: BigInt): Promise<BigInt> {
   return new Promise(resolve => {
-    post(`${STARKWARE_APP}/hash`, {
-      x: x.toString(),
-      y: y.toString(),
-    }).then(res => {
-      resolve(BigInt(res.res));
-    });
+    resolve(BigInt(`0x${pedersen([x, y])}`));
   });
 }
 
@@ -76,7 +70,7 @@ interface ZKFunctionsSkeleton {
   hash: (x: BigInt, y: BigInt) => Promise<BigInt>;
   sharedKey: (privKey: PrivKey, pubKey: PubKey) => Promise<BigInt>;
   genSharedKey: () => Promise<BigInt>;
-  genPrivKey: () => Promise<{ privKey: BigInt; pubKey: BigInt[] }>;
+  genKeys: () => Promise<{ privKey: BigInt; pubKey: BigInt[] }>;
   decrypt: (ciphertext: Ciphertext, sharedKey: BigInt) => Promise<BigInt[]>;
   decryptKeyCiphertext:
     (ciphertext: Ciphertext, sharedKey: BigInt) => Promise<BigInt>;
@@ -106,7 +100,7 @@ const ZKFunctions: Record<ZKTypes, ZKFunctionsSkeleton> = {
     'hash': mimcHash,
     'sharedKey': sharedKeySnark,
     'genSharedKey': genSharedKeySnark,
-    'genPrivKey': genPrivKeySnarkAsync,
+    'genKeys': genPrivKeySnarkAsync,
     'decrypt': decryptMimcAsync,
     'decryptKeyCiphertext':
       (
@@ -143,7 +137,7 @@ const ZKFunctions: Record<ZKTypes, ZKFunctionsSkeleton> = {
     'hash': pedersenHash,
     'sharedKey': sharedKeyStark,
     'genSharedKey': genSharedKeyStark,
-    'genPrivKey': genPrivKeyStark,
+    'genKeys': genPrivKeyStark,
     'decrypt': decryptPedersen,
     'decryptKeyCiphertext':
       (
@@ -189,14 +183,7 @@ async function sharedKeyStark(
   pubKey: PubKey,
 ): Promise<BigInt> {
   return new Promise(resolve => {
-    const _privKey = privKey.rawPrivKey;
-    const _pubKey = pubKey.asArray();
-    post(`${STARKWARE_APP}/shared-key`, {
-      priv_key: _privKey.toString(),
-      pub_key: _pubKey.map(_ => _.toString()),
-    }).then(res => {
-      resolve(BigInt(res.res));
-    });
+    resolve(computeSharedKey(privKey, pubKey));
   });
 }
 
@@ -212,9 +199,7 @@ async function genSharedKeySnark(): Promise<BigInt> {
 
 async function genSharedKeyStark(): Promise<BigInt> {
   return new Promise(resolve => {
-    get(`${STARKWARE_APP}/key`).then(res => {
-      resolve(BigInt(res.res));
-    });
+    resolve(genSharedKey());
   });
 }
 
@@ -234,13 +219,7 @@ async function genPrivKeySnarkAsync():
 async function genPrivKeyStark():
   Promise<{ privKey: BigInt; pubKey: BigInt[] }> {
   return new Promise(resolve => {
-    get(`${STARKWARE_APP}/keys`).then(res => {
-      const key = {
-        privKey: BigInt(res.res.priv_key),
-        pubKey: res.res.pub_key.map(BigInt),
-      };
-      resolve(key);
-    });
+    resolve(genKeypair());
   });
 }
 

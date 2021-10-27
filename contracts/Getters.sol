@@ -33,7 +33,6 @@ contract Getters {
     coreContract = ICore(_coreContractAddress);
   }
 
-
   function getPublicKey(address _address, string calldata zk) public view returns (uint256[2] memory publicKey) {
     return coreContract.getPublicKey(_address, zk);
   }
@@ -55,8 +54,7 @@ contract Getters {
 
   function getCiphertext(uint256 tokenId) public view returns (uint256[2] memory) {
     ContractStorage.Token memory token = coreContract.getToken(tokenId);
-    // require(token.redeemed == true, 'Ciphertext not posted yet');
-    require(token.redeemed == true, '');
+    require(token.redeemed == true, 'DataMarketplaceCore/ciphertext-not-posted');
     uint256[2] memory ciphertext;
     ciphertext[0] = token.ciphertext1;
     ciphertext[1] = token.ciphertext2;

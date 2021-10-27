@@ -25,48 +25,6 @@ print(sharp_client.contract_client.contract.address)
 print(compute_program_hash_chain(program))
 
 
-def genKeypair():
-    priv_key = get_random_private_key()
-    public_key = private_key_to_ec_point_on_stark_curve(priv_key)
-
-    keypair = { 'priv_key': priv_key, 'pub_key': public_key }
-    return keypair
-
-def genSharedKey():
-    key1 = genKeypair()
-    key2 = genKeypair()
-    return ec_mult(key1['priv_key'], key2['pub_key'], 1, FIELD_PRIME)[0]
-
-
-@app.route('/shared-key', methods=['POST'])
-def shared_key():
-    priv_key = request.json.get('priv_key')
-    pub_key = request.json.get('pub_key')
-    shared_key = ec_mult(int(priv_key), [int(pub_key[0]), int(pub_key[1])], 1, FIELD_PRIME)[0]
-    return jsonify({ 'res': str(shared_key) })
-
-@app.route('/key', methods=['GET'])
-def key():
-    sharedKey = genSharedKey()
-    return jsonify({ 'res': str(sharedKey) })
-
-@app.route('/keys', methods=['GET'])
-def keys():
-    key = genKeypair()
-    keypair = {
-      'priv_key': str(key['priv_key']),
-      'pub_key': [str(key['pub_key'][0]), str(key['pub_key'][1])],
-    }
-
-    return jsonify({ 'res': keypair })
-
-@app.route('/hash', methods=['POST'])
-def hash():
-    x = request.json.get('x')
-    y = request.json.get('y')
-    output = pedersen_hash(int(x), int(y))
-    return jsonify({ 'res': str(output) })
-
 @app.route('/prove', methods=['POST'])
 def prove():
     circuit = request.json.get('circuit')
@@ -94,25 +52,5 @@ def prove():
     output_new = [str(_) for _ in output]
     print(output_new)
     return jsonify({'res': {'programOutputs': output_new, 'fact': fact}})
-
-@app.route('/', methods=['POST'])
-def send_request():
-    call = request.json.get('type')
-    inputs = request.json.get('inputs')
-    contractAddress = request.json.get('contractAddress')
-    contract = request.json.get('contract')
-    func = request.json.get('func')
-    print(func, inputs)
-    if len(inputs) > 0:
-        inp = '--inputs ' + ' '.join(inputs)
-    else:
-        inp = ''
-    print(inp)
-    command = 'starknet ' + call + ' --address ' + contractAddress + ' --abi /home/nulven/CairoMarketplace/cairo/contracts/' + contract + '_abi.json --function ' + func + ' ' + inp
-    output = os.system(command)
-    output_new = [str(_) for _ in output]
-    print(output_new)
-
-    return jsonify({'res': output_new})
 
 app.run(host='localhost', port=5002, debug=True)

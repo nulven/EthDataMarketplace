@@ -103,7 +103,7 @@ class EthConnection {
         _privateKey = privateKeyMaybe;
         _publicKey = publicKeyMaybe.split(',');
       } else {
-        const keys = await ZKFunctions[zk].genPrivKey();
+        const keys = await ZKFunctions[zk].genKeys();
         _privateKey = keys.privKey;
         _publicKey = keys.pubKey;
         localStorage.setItem(`${this.address}_private_key_${zk}`, _privateKey);

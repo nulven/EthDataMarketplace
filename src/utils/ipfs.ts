@@ -20,7 +20,11 @@ class IpfsConnection {
   constructor() {
     this.getCachedSettings();
     this.setApi();
-    this.updateSettings(config.ipfsHost, 'https', '', '');
+    if (config.env === 'production') {
+      this.updateSettings(config.ipfsHost, 'https', '', '');
+    } else {
+      this.updateSettings('localhost:8081', 'http', '', '');
+    }
   }
 
   getCachedSettings() {

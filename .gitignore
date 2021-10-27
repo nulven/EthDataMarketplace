@@ -1,9 +1,13 @@
 .env
 node_modules
 dist
-*.DS_Store
 
+cache
+deployments/localhost
+typechain
+compiledCircuits
+public/circuits
+public/contracts
+circuits/pots
+circuits/**/public.json
 config/config.json
-public/contracts/dev
-
-*.ptau

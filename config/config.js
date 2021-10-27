@@ -4,9 +4,7 @@ const env = process.env.NODE_ENV;
 const defaultConfig = {
   enableDarkForestCheck: process.env.DARK_FOREST_CHECK === 'true',
   ipfsHost: process.env.IPFS_HOST,
-  network: process.env.NETWORK,
-  chain: process.env.ETH_NETWORK,
-  zk: process.env.ZK,
+  chain: process.env.NETWORK,
   starkwareApp: process.env.STARKWARE_APP,
   infuraId: process.env.INFURA_ID,
 };

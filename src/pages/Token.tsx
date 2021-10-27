@@ -263,15 +263,18 @@ const Token = (props) => {
         <TokenWrapper>
           <Header>{StateHeaders[tokenState]()}</Header>
           {tokenState !== TokenStates.NULL && tokenState ?
-            <Content
-              secretKey={key}
-              property={property}
-              zk={zk}
-              content={{
-                cipher: ciphertext,
-                property: contentProperty,
-              }}
-            />
+            <>
+              <Content
+                secretKey={key}
+                property={property}
+                zk={zk}
+                content={{
+                  cipher: ciphertext,
+                  property: contentProperty,
+                }}
+              />
+              <Large>{`Price: ${content.price.toString()}`}</Large>
+            </>
             : null}
           {tokenState === TokenStates.UNPURCHASED ?
             <>

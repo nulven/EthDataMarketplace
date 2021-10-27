@@ -1,0 +1,87 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "DarkForestCore",
+  "sourceName": "contracts/DarkForestCore.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "key",
+          "type": "uint256"
+        }
+      ],
+      "name": "planets",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "isHomePlanet",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct DarkForestUtils.Planet",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "s",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "PLANETHASH_KEY",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct DarkForestUtils.SnarkConstants",
+          "name": "snarkConstants",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "snarkConstants",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "PLANETHASH_KEY",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct DarkForestUtils.SnarkConstants",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b50604080518082018252338152600160208083018281527f0b8f3e5cb1e0519c520b88073ab3be1313af840e2f2682ba2e77c948b27bcb8a6000908152825292517f190130b61c65d0bc84a5bab3064c7d963327e80b54c17dbf4714f663cc5f2678805494511515600160a01b026001600160a81b03199095166001600160a01b0392909216919091179390931790925582519182019092527f04c06f1329eb7d8e37e558c329a5ffc2b896718ab7dd897b7d45feae09a285d7908190529055610160806100df6000396000f3fe608060405234801561001057600080fd5b50600436106100415760003560e01c806326c1e7501461004657806351baf19e146100f757806386b714e214610124575b600080fd5b6100bf61005436600461013b565b6040805180820190915260008082526020820152506000908152602081815260409182902082518084019093525473ffffffffffffffffffffffffffffffffffffffff8116835274010000000000000000000000000000000000000000900460ff1615159082015290565b60408051825173ffffffffffffffffffffffffffffffffffffffff168152602092830151151592810192909252015b60405180910390f35b60408051602080820183526000909152815190810190915260015481525b604051905181526020016100ee565b604080516020810190915260015481526101159081565b60006020828403121561014c578081fd5b503591905056fea164736f6c6343000803000a",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b50600436106100415760003560e01c806326c1e7501461004657806351baf19e146100f757806386b714e214610124575b600080fd5b6100bf61005436600461013b565b6040805180820190915260008082526020820152506000908152602081815260409182902082518084019093525473ffffffffffffffffffffffffffffffffffffffff8116835274010000000000000000000000000000000000000000900460ff1615159082015290565b60408051825173ffffffffffffffffffffffffffffffffffffffff168152602092830151151592810192909252015b60405180910390f35b60408051602080820183526000909152815190810190915260015481525b604051905181526020016100ee565b604080516020810190915260015481526101159081565b60006020828403121561014c578081fd5b503591905056fea164736f6c6343000803000a",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

@@ -2,6 +2,7 @@ import json
 
 from starkware.crypto.signature.math_utils import ec_add, ec_mult
 from starkware.crypto.signature.signature import get_random_private_key, private_key_to_ec_point_on_stark_curve, FIELD_PRIME
+from starkware.crypto.signature.fast_pedersen_hash import pedersen_hash
 
 
 def genKeypair():
@@ -23,4 +24,4 @@ def gen_keys():
         json.dump(data, f)
 
 
-gen_keys()
+print(private_key_to_ec_point_on_stark_curve(1463287801087371787425637237490104066531018057258318019831177542025430958080))

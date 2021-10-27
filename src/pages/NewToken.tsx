@@ -75,7 +75,7 @@ const NewToken = (props) => {
     };
 
     const sharedKey = await ZKFunctions[zk].genSharedKey();
-    const keyHash = await ZKFunctions[zk].hash(sharedKey, BigInt(-1));
+    const keyHash = await ZKFunctions[zk].hash(sharedKey, BigInt(0));
 
     setLoadingMessage('generating proof');
     const {
