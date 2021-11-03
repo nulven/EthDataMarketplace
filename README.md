@@ -4,7 +4,7 @@
 
 1. Creator generates a [Property Proof](#property-proofs) which:
    - asserts they have some content which satisfies a particular property (`f(data) = property`)
-   - outputs the encryption of the data with a randomly generated key (`Enc(key, pk)`)
+   - outputs the encryption of the data with a randomly generated key (`Enc(data, key)`)
    - outputs the hash of the randomly generated key (`H(key)`)
 2. The creator publishes the proof on IPFS and registers the IPFS URI and the key hash on a smart contract
 3. Using the IPFS URI on the contract, the buyer sees the property and verifies that:
